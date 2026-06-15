@@ -59,7 +59,7 @@ export default function CandidateSelector({
 
       {/* Preset Selector */}
       <div className="flex flex-col gap-2">
-        <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+        <label className="text-xs font-bold uppercase tracking-wider text-slate-650 dark:text-slate-300">
           Target Candidate Profiles
         </label>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -84,12 +84,12 @@ export default function CandidateSelector({
                   <span className="font-semibold text-sm text-slate-900 group-hover:text-sky-600 transition-colors">
                     {cand.name}
                   </span>
-                  <span className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md border ${badgeColor}`}>
+                  <span className={`text-xs uppercase font-extrabold px-1.5 py-0.5 rounded-md border ${badgeColor}`}>
                     {cand.preparsedResult.overall_metrics.tier}
                   </span>
                 </div>
-                <span className="text-[11px] text-slate-500 mt-1 line-clamp-1">{cand.position}</span>
-                <span className="text-[10px] text-slate-400 mt-2 line-clamp-2 leading-relaxed">
+                <span className="text-xs font-medium text-slate-700 dark:text-slate-300 mt-1 line-clamp-1">{cand.position}</span>
+                <span className="text-xs text-slate-600 dark:text-slate-400 mt-2 line-clamp-2 leading-relaxed">
                   {cand.description}
                 </span>
                 
@@ -104,7 +104,7 @@ export default function CandidateSelector({
 
       <div className="flex items-center gap-2">
         <div className="h-[1px] bg-slate-200 flex-grow" />
-        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">or</span>
+        <span className="text-xs font-bold text-slate-550 dark:text-slate-300 uppercase tracking-widest">or</span>
         <div className="h-[1px] bg-slate-200 flex-grow" />
       </div>
 
@@ -124,7 +124,7 @@ export default function CandidateSelector({
           </button>
           
           {isCustomMode && (
-            <span className="text-[11px] font-mono text-slate-400">
+            <span className="text-xs font-mono text-slate-600 dark:text-slate-400 font-bold">
               {customTranscript.trim() ? `${customTranscript.trim().split(/\s+/).length} words` : "0 words"}
             </span>
           )}
@@ -159,7 +159,7 @@ export default function CandidateSelector({
           <HelpCircle className="w-4 h-4 text-slate-500" />
           Evaluation Engine Strict Safeguards
         </h4>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px] text-slate-600">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-slate-700 dark:text-slate-300 font-medium">
           <div className="flex gap-2 items-start">
             <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
             <div>

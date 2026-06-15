@@ -60,6 +60,10 @@ export default function App() {
   // Selected timeline phase index for interactive exploration (default: 0 or first FAIL index)
   const [selectedTimelineIndex, setSelectedTimelineIndex] = useState<number>(0);
 
+  // Pagination states to make large lists scorable and readable
+  const [dashboardPage, setDashboardPage] = useState<number>(1);
+  const [matrixPage, setMatrixPage] = useState<number>(1);
+
   // Reference for the detailed audit sequence container to enable jumping/scrolling
   const timelineDetailRef = useRef<HTMLDivElement>(null);
 
@@ -211,6 +215,8 @@ export default function App() {
     const candidateData = PRESET_CANDIDATES.find(c => c.id === activeCandidateId) || PRESET_CANDIDATES[0];
     setBantcqState(candidateData.preparsedResult.bantcq_scoring);
     setComplianceState(candidateData.preparsedResult.compliance_checklist);
+    setDashboardPage(1);
+    setMatrixPage(1);
     
     const seedMsg = candidateData.preparsedResult.tier_upgrade_advisor.coaching_prompt_seed;
     setCoachingChat([
@@ -903,7 +909,7 @@ AI Training Assistant // VOTEST Global`;
                                 {activeCandidateId === "john_doe" ? "170 WPM (Fast)" : activeCandidateId === "ji_woo_park" ? "135 WPM (Optimal)" : "130 WPM (Optimal)"}
                               </span>
                             </div>
-                            <span className={`px-2 py-1 text-[10px] rounded-md font-mono border font-black uppercase block ${
+                            <span className={`px-2 py-1 text-xs rounded-md font-mono border font-black uppercase block ${
                               activeCandidateId === "john_doe" ? "bg-red-50 text-red-800 border-red-350" : "bg-emerald-50 text-emerald-800 border-emerald-355"
                             }`}>
                               {activeCandidateId === "john_doe" ? "FAST (속도: 매우 빠름)" : "OPTIMAL (속도: 보통)"}
@@ -912,7 +918,7 @@ AI Training Assistant // VOTEST Global`;
                         </div>
 
                         {/* WPM gauge indicators zones */}
-                        <div className="grid grid-cols-3 gap-1.5 text-[9px] text-center font-mono font-bold mt-4">
+                        <div className="grid grid-cols-3 gap-1.5 text-xs text-center font-mono font-bold mt-4">
                           <div className={`p-1 rounded border transition-colors ${theme === "dark" ? "bg-slate-900 border-slate-800 text-slate-500" : "bg-slate-100 border-slate-200 text-slate-400"}`}>Slow (&lt;110)</div>
                           <div className={`p-1 rounded border font-black transition-colors ${activeCandidateId !== "john_doe" ? "bg-emerald-100 text-emerald-950 border-emerald-500" : (theme === "dark" ? "bg-slate-900 border-slate-800 text-slate-550" : "bg-slate-100 border-slate-205 text-slate-400")}`}>Optimal (110-145)</div>
                           <div className={`p-1 rounded border font-black transition-colors ${activeCandidateId === "john_doe" ? "bg-red-100 text-red-950 border-red-500" : (theme === "dark" ? "bg-slate-900 border-slate-800 text-slate-550" : "bg-slate-100 border-slate-250 text-slate-400")}`}>Fast (&gt;145)</div>
@@ -946,7 +952,7 @@ AI Training Assistant // VOTEST Global`;
                           <div className={`p-4 rounded-xl border transition-colors relative overflow-hidden ${
                             theme === "dark" ? "border-slate-800 bg-slate-900/40" : "border-slate-200 bg-white"
                           }`}>
-                            <span className="text-[10px] font-mono font-black text-slate-400 tracking-wider uppercase block">
+                            <span className="text-xs font-mono font-black text-slate-550 dark:text-slate-400 tracking-wider uppercase block">
                               Interruptions (동시발화)
                             </span>
                             <div className="flex items-baseline gap-2 mt-2">
@@ -955,7 +961,7 @@ AI Training Assistant // VOTEST Global`;
                               </span>
                               <span className="text-xs text-slate-550 font-bold uppercase font-mono">instances</span>
                             </div>
-                            <p className="text-[11px] text-slate-650 leading-relaxed mt-2 italic">
+                            <p className="text-xs text-slate-650 dark:text-slate-300 leading-relaxed mt-2 italic font-medium">
                               "{activeCandidate.preparsedResult.linguistic_metrics.overlapping_speech.details}"
                             </p>
                             {activeCandidateId === "john_doe" && (
@@ -967,7 +973,7 @@ AI Training Assistant // VOTEST Global`;
                           <div className={`p-4 rounded-xl border transition-colors relative overflow-hidden ${
                             theme === "dark" ? "border-slate-800 bg-slate-900/40" : "border-slate-200 bg-white"
                           }`}>
-                            <span className="text-[10px] font-mono font-black text-slate-400 tracking-wider uppercase block">
+                            <span className="text-xs font-mono font-black text-slate-550 dark:text-slate-400 tracking-wider uppercase block">
                               Silent Gaps (묵음)
                             </span>
                             <div className="flex items-baseline gap-2 mt-2">
@@ -976,7 +982,7 @@ AI Training Assistant // VOTEST Global`;
                               </span>
                               <span className="text-xs text-slate-550 font-bold uppercase font-mono">instances</span>
                             </div>
-                            <p className="text-[11px] text-slate-650 leading-relaxed mt-2 italic">
+                            <p className="text-xs text-slate-650 dark:text-slate-350 leading-relaxed mt-2 italic font-medium">
                               {activeCandidateId === "john_doe" 
                                 ? "Exhibited abrupt hesitation pauses during regulatory return inquiries." 
                                 : "Zero excessive silent gaps. Interactive turn rhythm is professional."}
@@ -1022,81 +1028,117 @@ AI Training Assistant // VOTEST Global`;
                           ? "bg-slate-950/40 border-slate-800 text-slate-100" 
                           : "bg-white border-slate-100 text-slate-900 shadow-xs"
                       }`}>
-                        <div>
-                          <div className="flex items-center justify-between mb-2 pb-2 border-b border-dashed border-slate-205">
-                            <span className="text-[9.5px] font-black uppercase tracking-wider text-slate-400 font-mono">
-                              BANTCQ AUDIT INDEX LISTING
-                            </span>
-                            <span className="text-[9.5px] font-mono text-slate-400 font-semibold bg-slate-100 px-1.5 py-0.5 rounded">
-                              TOTAL 6 METRICS
-                            </span>
-                          </div>
-                          
-                          <div className="space-y-2">
-                            {bantcqState.map((chk) => {
-                              const matchingIdx = callFlowEvents.findIndex(ev => ev.criterion === chk.criterion);
-                              const isSelected = selectedTimelineIndex === matchingIdx;
-                              
-                              return (
-                                <div 
-                                  key={chk.criterion} 
-                                  onClick={() => {
-                                    if (matchingIdx !== -1) {
-                                      setSelectedTimelineIndex(matchingIdx);
-                                      timelineDetailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                                    }
-                                  }}
-                                  className={`p-2.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between group ${
-                                    isSelected 
-                                      ? (theme === "dark" ? "bg-slate-900 border-sky-500" : "bg-sky-50 border-sky-400") 
-                                      : (theme === "dark" ? "bg-slate-900/60 border-slate-850 hover:border-slate-700" : "bg-slate-50 border-slate-200 hover:border-slate-350")
-                                  }`}
-                                >
-                                  <div className="flex items-center gap-2 max-w-[70%]">
-                                    <div className="p-1 bg-white rounded-md border border-slate-205 shrink-0">
-                                      {getBantcqIcon(chk.criterion)}
-                                    </div>
-                                    <div className="truncate">
-                                      <div className="flex items-center gap-1">
-                                        <span className={`font-extrabold text-[11px] truncate ${theme === "dark" ? "text-slate-205" : "text-slate-900"}`}>
-                                          {chk.criterion === "Compliance" ? "Required Rules (Compliance)" : chk.criterion}
-                                        </span>
-                                        <span className="text-[9px] text-slate-400 shrink-0 font-mono">
-                                          ({getKoreanLabel(chk.criterion)})
-                                        </span>
-                                      </div>
-                                      <div className={`text-[9.5px] truncate font-mono mt-0.5 ${theme === "dark" ? "text-slate-405" : "text-slate-550"}`}>
-                                        {chk.status === "FAIL" ? "❌ Compliance Alert: Click to see FAIL log" : `✅ Passed: "${chk.evidence.substring(0, 24)}..."`}
-                                      </div>
-                                    </div>
-                                  </div>
-
-                                  <div className="flex items-center gap-1 shrink-0">
-                                    <span className={`px-1.5 py-0.5 text-[8.5px] font-black uppercase tracking-wider rounded border ${
-                                      chk.status === "PASS"
-                                        ? "bg-emerald-50 text-emerald-800 border-emerald-300"
-                                        : "bg-red-50 text-red-800 border-red-300 animate-pulse"
-                                    }`}>
-                                      {chk.status}
-                                    </span>
-                                    <button 
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleToggleBantcq(chk.criterion);
+                        <div className="flex flex-col h-full justify-between gap-4">
+                          <div>
+                            <div className="flex items-center justify-between mb-3 pb-2 border-b border-dashed border-slate-200">
+                              <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 font-mono">
+                                BANTCQ AUDIT INDEX LISTING
+                              </span>
+                              <span className="text-xs font-mono text-slate-800 dark:text-slate-200 font-black bg-slate-200/60 dark:bg-slate-800 px-2 py-0.5 rounded">
+                                PAGE {dashboardPage}/2
+                              </span>
+                            </div>
+                            
+                            <div className="space-y-2">
+                              {(() => {
+                                const itemsPerPage = 3;
+                                const paginated = bantcqState.slice((dashboardPage - 1) * itemsPerPage, dashboardPage * itemsPerPage);
+                                return paginated.map((chk) => {
+                                  const matchingIdx = callFlowEvents.findIndex(ev => ev.criterion === chk.criterion);
+                                  const isSelected = selectedTimelineIndex === matchingIdx;
+                                  
+                                  return (
+                                    <div 
+                                      key={chk.criterion} 
+                                      onClick={() => {
+                                        if (matchingIdx !== -1) {
+                                          setSelectedTimelineIndex(matchingIdx);
+                                          timelineDetailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                                        }
                                       }}
-                                      className={`px-1.5 py-0.5 rounded border text-[8.5px] font-mono font-bold uppercase cursor-pointer transition-all ${
-                                        theme === "dark" 
-                                          ? "bg-slate-950 hover:bg-slate-800 border-slate-800 text-slate-300" 
-                                          : "bg-white hover:bg-slate-100 border-slate-300 text-slate-700"
+                                      className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between group ${
+                                        isSelected 
+                                          ? (theme === "dark" ? "bg-slate-900 border-sky-500" : "bg-sky-50 border-sky-400 shadow-xs") 
+                                          : (theme === "dark" ? "bg-slate-900/60 border-slate-850 hover:border-slate-755" : "bg-slate-50 border-slate-200 hover:border-slate-350")
                                       }`}
-                                      title="Click to toggle pass/fail simulation"
                                     >
-                                      Flip
-                                    </button>
-                                  </div>
-                                </div>
-                              );
-                            })}
+                                      <div className="flex items-center gap-2 max-w-[70%]">
+                                        <div className="p-1.5 bg-white rounded-md border border-slate-200 shrink-0">
+                                          {getBantcqIcon(chk.criterion)}
+                                        </div>
+                                        <div className="truncate">
+                                          <div className="flex items-center gap-1.5">
+                                            <span className={`font-extrabold text-xs truncate ${theme === "dark" ? "text-slate-205" : "text-slate-900"}`}>
+                                              {chk.criterion === "Compliance" ? "Required Rules (Compliance)" : chk.criterion}
+                                            </span>
+                                            <span className="text-xs text-slate-650 dark:text-slate-400 shrink-0 font-mono font-semibold">
+                                              ({getKoreanLabel(chk.criterion)})
+                                            </span>
+                                          </div>
+                                          <div className={`text-xs truncate font-mono mt-0.5 ${theme === "dark" ? "text-slate-400" : "text-slate-600"}`}>
+                                            {chk.status === "FAIL" ? "❌ Compliance Alert: Click to see FAIL log" : `✅ Passed: "${chk.evidence.substring(0, 24)}..."`}
+                                          </div>
+                                        </div>
+                                      </div>
+
+                                      <div className="flex items-center gap-1.5 shrink-0">
+                                        <span className={`px-2 py-0.5 text-xs font-extrabold uppercase tracking-widest rounded-md border ${
+                                          chk.status === "PASS"
+                                            ? "bg-emerald-50 text-emerald-800 border-emerald-300"
+                                            : "bg-red-50 text-red-800 border-red-300 animate-pulse"
+                                        }`}>
+                                          {chk.status}
+                                        </span>
+                                        <button 
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleToggleBantcq(chk.criterion);
+                                          }}
+                                          className={`px-2 py-0.5 rounded-lg border text-xs font-mono font-bold uppercase cursor-pointer transition-all ${
+                                            theme === "dark" 
+                                              ? "bg-slate-950 hover:bg-slate-850 border-slate-800 text-slate-300" 
+                                              : "bg-white hover:bg-slate-100 border-slate-300 text-slate-700"
+                                          }`}
+                                          title="Click to toggle pass/fail simulation"
+                                        >
+                                          Flip
+                                        </button>
+                                      </div>
+                                    </div>
+                                  );
+                                });
+                              })()}
+                            </div>
+                          </div>
+
+                          {/* Pagination Controls */}
+                          <div className="flex items-center justify-between pt-3 border-t border-dashed border-slate-200 mt-2">
+                            <span className="text-xs text-slate-600 dark:text-slate-400 font-bold font-sans">
+                              Showing {((dashboardPage - 1) * 3) + 1} to {Math.min(6, dashboardPage * 3)} of 6 entries
+                            </span>
+                            <div className="flex gap-1">
+                              <button
+                                disabled={dashboardPage === 1}
+                                onClick={() => setDashboardPage(1)}
+                                className={`px-2 py-1 text-xs font-semibold rounded-md border transition-all cursor-pointer ${
+                                  dashboardPage === 1 
+                                    ? "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-transparent cursor-not-allowed" 
+                                    : "bg-white hover:bg-slate-50 border-slate-300 text-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800 dark:border-slate-800 dark:text-slate-300"
+                                }`}
+                              >
+                                1
+                              </button>
+                              <button
+                                onClick={() => setDashboardPage(2)}
+                                className={`px-2 py-1 text-xs font-semibold rounded-md border transition-all cursor-pointer ${
+                                  dashboardPage === 2 
+                                    ? "bg-slate-900 text-white border-slate-900 dark:bg-sky-600 dark:text-white dark:border-sky-600" 
+                                    : "bg-white hover:bg-slate-50 border-slate-300 text-slate-850 dark:bg-slate-900 dark:hover:bg-slate-800 dark:border-slate-800 dark:text-slate-300"
+                                }`}
+                              >
+                                2
+                              </button>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -1324,7 +1366,7 @@ AI Training Assistant // VOTEST Global`;
                   
                   {/* PANEL 3: SCRIPT COMPLIANCE & BANTCQ EVALUATION MATRIX */}
                   <div>
-                    <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center justify-between mb-1">
+                    <h2 className="text-xs font-bold uppercase tracking-widest text-slate-600 dark:text-slate-300 flex items-center justify-between mb-1">
                       <span>BANTCQ Evaluation Matrix</span>
                     </h2>
                     <h3 className={`text-xl font-bold font-display uppercase tracking-tight mb-3 transition-colors ${theme === "dark" ? "text-white" : "text-slate-950"}`}>
@@ -1332,7 +1374,7 @@ AI Training Assistant // VOTEST Global`;
                     </h3>
                     <p className={`text-xs leading-relaxed max-w-3xl transition-colors ${theme === "dark" ? "text-slate-400" : "text-slate-650"}`}>
                       This scorecard evaluates client conversation compliance against standard interactive wealth management phases. 
-                      <strong className={`block mt-1.5 transition-colors ${theme === "dark" ? "text-sky-400" : "text-slate-950"}`}>💡 Manager Pro-Tip (Dynamic Simulation): Click or interact with any item's "PASS" or "FAIL" state buttons below to dynamically override the grading scorecard and watch the competency gauges recalculate.</strong>
+                      <strong className={`block mt-1.5 transition-colors ${theme === "dark" ? "text-sky-455" : "text-slate-950"}`}>💡 Manager Pro-Tip (Dynamic Simulation): Click or interact with any item's "PASS" or "FAIL" state buttons below to dynamically override the grading scorecard and watch the competency gauges recalculate.</strong>
                     </p>
                   </div>
 
@@ -1340,12 +1382,12 @@ AI Training Assistant // VOTEST Global`;
                   <div className={`border rounded-2xl overflow-hidden transition-all mt-4 ${
                     theme === "dark" 
                       ? "border-slate-800 bg-slate-950 bg-slate-900" 
-                      : "border-slate-100 bg-white shadow-sm"
+                      : "border-slate-150 bg-white shadow-sm"
                   }`}>
                     <div className="overflow-x-auto">
                       <table className="w-full text-left border-collapse text-xs">
                         <thead>
-                          <tr className="bg-slate-900 text-white font-mono uppercase border-b border-slate-800 text-[10px] tracking-wider">
+                          <tr className="bg-slate-900 text-white font-mono uppercase border-b border-slate-800 text-xs tracking-wider">
                             <th className="p-4 font-black">Segment & Korean Param (평가 항목)</th>
                             <th className="p-4 font-black text-center">Interactive Status Toggle</th>
                             <th className="p-4 font-black">Transcript Evidence (검출 대사)</th>
@@ -1353,91 +1395,125 @@ AI Training Assistant // VOTEST Global`;
                           </tr>
                         </thead>
                         <tbody className={`divide-y transition-colors ${theme === "dark" ? "divide-slate-800" : "divide-slate-200"}`}>
-                          {bantcqState.map((item, idx) => (
-                            <tr key={idx} className={`transition-colors ${theme === "dark" ? "hover:bg-slate-900/40" : "hover:bg-slate-50/50"}`}>
-                              
-                              {/* Task header segment & Korean translation */}
-                              <td className="p-4">
-                                <div className="flex items-center gap-2.5">
-                                  <div className="shrink-0 p-1 bg-white rounded-md border border-slate-205">
-                                    {getBantcqIcon(item.criterion)}
+                          {(() => {
+                            const itemsPerPage = 3;
+                            const paginated = bantcqState.slice((matrixPage - 1) * itemsPerPage, matrixPage * itemsPerPage);
+                            return paginated.map((item, idx) => (
+                              <tr key={idx} className={`transition-colors ${theme === "dark" ? "hover:bg-slate-900/40" : "hover:bg-slate-50/50"}`}>
+                                
+                                {/* Task header segment & Korean translation */}
+                                <td className="p-4">
+                                  <div className="flex items-center gap-2.5">
+                                    <div className="shrink-0 p-1 bg-white rounded-md border border-slate-250">
+                                      {getBantcqIcon(item.criterion)}
+                                    </div>
+                                    <div>
+                                      <span className={`font-extrabold text-sm block transition-colors ${theme === "dark" ? "text-white" : "text-slate-950"}`}>
+                                        {item.criterion === "Compliance" ? "Required Rules (Compliance)" : item.criterion === "Question" ? "Questioning Strategy" : `${item.criterion} Verification`}
+                                      </span>
+                                      <span className="font-mono text-xs text-slate-550 dark:text-slate-350 font-bold uppercase tracking-wider block mt-0.5">
+                                        {getKoreanLabel(item.criterion)} // {item.score}/10 pts
+                                      </span>
+                                    </div>
                                   </div>
-                                  <div>
-                                    <span className={`font-extrabold text-sm block transition-colors ${theme === "dark" ? "text-white" : "text-slate-950"}`}>
-                                      {item.criterion === "Compliance" ? "Required Rules (Compliance)" : item.criterion === "Question" ? "Questioning Strategy" : `${item.criterion} Verification`}
-                                    </span>
-                                    <span className="font-mono text-[10px] text-slate-400 font-bold uppercase tracking-wider block mt-0.5">
-                                      {getKoreanLabel(item.criterion)} // {item.score}/10 pts
-                                    </span>
-                                  </div>
-                                </div>
-                              </td>
+                                </td>
 
-                              {/* Interactive pass fail toggler buttons */}
-                              <td className="p-4 text-center">
-                                <div className="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200 select-none">
-                                  <button
-                                    onClick={() => handleToggleBantcq(item.criterion)}
-                                    className={`px-3 py-1 text-[10px] uppercase font-black tracking-wider rounded-lg cursor-pointer transition-all ${
-                                      item.status === "PASS"
-                                        ? "bg-slate-900 text-emerald-400"
-                                        : "text-slate-400 hover:text-slate-700"
-                                    }`}
-                                  >
-                                    PASS
-                                  </button>
-                                  <button
-                                    onClick={() => handleToggleBantcq(item.criterion)}
-                                    className={`px-3 py-1 text-[10px] uppercase font-black tracking-wider rounded-lg cursor-pointer transition-all ${
-                                      item.status === "FAIL"
-                                        ? "bg-rose-600 text-white shadow-sm"
-                                        : "text-slate-400 hover:text-slate-700"
-                                    }`}
-                                  >
-                                    FAIL
-                                  </button>
-                                </div>
-                              </td>
-
-                              {/* Evidence Dialogue Block */}
-                              <td className="p-4 max-w-xs">
-                                {item.evidence && item.evidence !== "None" ? (
-                                  <div className="bg-slate-950 text-amber-100 p-2.5 rounded-lg border-l-4 border-amber-400 font-mono text-[10px] leading-relaxed italic select-all">
-                                    "{item.evidence}"
-                                  </div>
-                                ) : (
-                                  <span className="text-slate-400 font-bold uppercase text-[9px] block">
-                                    ❌ NO AUDITED EVIDENCE LOGGED
-                                  </span>
-                                )}
-                                <p className="text-[10px] text-slate-500 mt-1.5 leading-relaxed">
-                                  {item.critique}
-                                </p>
-                              </td>
-
-                              {/* Action [See Ideal Execution] for Failures, else show model quote */}
-                              <td className="p-4 text-right">
-                                {item.status === "FAIL" ? (
-                                  <span className="block">
+                                {/* Interactive pass fail toggler buttons */}
+                                <td className="p-4 text-center">
+                                  <div className="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200 select-none">
                                     <button
-                                      onClick={() => setExecutionModalItem(item)}
-                                      className="px-3 py-1.5 bg-rose-50 border-2 border-rose-955 text-rose-950 hover:bg-rose-100 text-[10px] font-black uppercase rounded-lg shadow-sm cursor-pointer transition-colors inline-flex items-center gap-1.5 animate-pulse"
+                                      onClick={() => handleToggleBantcq(item.criterion)}
+                                      className={`px-3 py-1.5 text-xs uppercase font-black tracking-wider rounded-lg cursor-pointer transition-all ${
+                                        item.status === "PASS"
+                                          ? "bg-slate-900 text-emerald-400"
+                                          : "text-slate-500 hover:text-slate-800"
+                                      }`}
                                     >
-                                      <Info className="w-3.5 h-3.5 text-rose-700" />
-                                      [See Ideal Execution]
+                                      PASS
                                     </button>
-                                  </span>
-                                ) : (
-                                  <span className="block italic text-emerald-700 font-semibold leading-relaxed max-w-xs ml-auto text-[11px]">
-                                    "{item.ideal_example}"
-                                  </span>
-                                )}
-                              </td>
+                                    <button
+                                      onClick={() => handleToggleBantcq(item.criterion)}
+                                      className={`px-3 py-1.5 text-xs uppercase font-black tracking-wider rounded-lg cursor-pointer transition-all ${
+                                        item.status === "FAIL"
+                                          ? "bg-rose-600 text-white shadow-sm"
+                                          : "text-slate-500 hover:text-slate-800"
+                                      }`}
+                                    >
+                                      FAIL
+                                    </button>
+                                  </div>
+                                </td>
 
-                            </tr>
-                          ))}
+                                {/* Evidence Dialogue Block */}
+                                <td className="p-4 max-w-xs">
+                                  {item.evidence && item.evidence !== "None" ? (
+                                    <div className="bg-slate-950 text-amber-100 p-2.5 rounded-lg border-l-4 border-amber-400 font-mono text-xs leading-relaxed italic select-all">
+                                      "{item.evidence}"
+                                    </div>
+                                  ) : (
+                                    <span className="text-slate-600 dark:text-slate-400 font-bold uppercase text-xs block">
+                                      ❌ NO AUDITED EVIDENCE LOGGED
+                                    </span>
+                                  )}
+                                  <p className="text-xs text-slate-600 dark:text-slate-300 mt-1.5 leading-relaxed font-medium">
+                                    {item.critique}
+                                  </p>
+                                </td>
+
+                                {/* Action [See Ideal Execution] for Failures, else show model quote */}
+                                <td className="p-4 text-right">
+                                  {item.status === "FAIL" ? (
+                                    <span className="block">
+                                      <button
+                                        onClick={() => setExecutionModalItem(item)}
+                                        className="px-3 py-1.5 bg-rose-50 border-2 border-rose-950 text-rose-950 hover:bg-rose-100 text-xs font-black uppercase rounded-lg shadow-xs cursor-pointer transition-colors inline-flex items-center gap-1.5 animate-pulse"
+                                      >
+                                        <Info className="w-3.5 h-3.5 text-rose-700" />
+                                        [See Ideal Execution]
+                                      </button>
+                                    </span>
+                                  ) : (
+                                    <span className="block italic text-emerald-800 dark:text-emerald-400 font-bold leading-relaxed max-w-xs ml-auto text-xs">
+                                      "{item.ideal_example}"
+                                    </span>
+                                  )}
+                                </td>
+
+                              </tr>
+                            ));
+                          })()}
                         </tbody>
                       </table>
+                    </div>
+
+                    {/* Matrix Pagination Controls */}
+                    <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 transition-colors">
+                      <span className="text-xs text-slate-700 dark:text-slate-350 font-bold font-sans">
+                        Showing {((matrixPage - 1) * 3) + 1} to {Math.min(6, matrixPage * 3)} of 6 entries
+                      </span>
+                      <div className="flex gap-1.5">
+                        <button
+                          disabled={matrixPage === 1}
+                          onClick={() => setMatrixPage(1)}
+                          className={`px-3 py-1.5 text-xs font-bold rounded-md border transition-all cursor-pointer ${
+                            matrixPage === 1 
+                              ? "bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-500 border-transparent cursor-not-allowed" 
+                              : "bg-white hover:bg-slate-100 border-slate-300 text-slate-800 dark:bg-slate-950 dark:hover:bg-slate-800 dark:border-slate-800 dark:text-slate-300"
+                          }`}
+                        >
+                          1
+                        </button>
+                        <button
+                          onClick={() => setMatrixPage(2)}
+                          className={`px-3 py-1.5 text-xs font-bold rounded-md border transition-all cursor-pointer ${
+                            matrixPage === 2 
+                              ? "bg-slate-900 text-white border-slate-900 dark:bg-sky-600 dark:text-white dark:border-sky-600" 
+                              : "bg-white hover:bg-slate-100 border-slate-300 text-slate-850 dark:bg-slate-950 dark:hover:bg-slate-800 dark:border-slate-800 dark:text-slate-300"
+                          }`}
+                        >
+                          2
+                        </button>
+                      </div>
                     </div>
                   </div>
 
