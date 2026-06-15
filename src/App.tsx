@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { PRESET_CANDIDATES } from "./presets";
 import { EvaluationResult, PresetCandidate, BantcqCheck, ComplianceCheck } from "./types";
 import CandidateSelector from "./components/CandidateSelector";
+import { AnimatePresence, motion } from "motion/react";
 import {
   ShieldCheck,
   AlertTriangle,
@@ -82,8 +83,13 @@ export default function App() {
   // Slide-out drawer state for Co-Pilot
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
 
-  // Call Flow Events dynamic mapping helper
-  const getCallFlowEvents = (candId: string) => {
+  // Accessibility refs for focus trapping
+  const drawerRef = useRef<HTMLDivElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
+
+
+  // Memoized Call Flow Events to prevent recalculation overhead in JSX renders
+  const callFlowEvents = useMemo(() => {
     const budgetItem = bantcqState.find(b => b.criterion === "Budget");
     const authorityItem = bantcqState.find(b => b.criterion === "Authority");
     const needsItem = bantcqState.find(b => b.criterion === "Needs");
@@ -99,10 +105,10 @@ export default function App() {
         timestamp: "00:00 - 00:35",
         status: "PASS" as const,
         criterion: null,
-        dialogue: candId === "ji_woo_park" 
+        dialogue: activeCandidateId === "ji_woo_park" 
           ? `Client: I have about $350,000 in savings that I want to invest safely. I'm hoping to get some steady growth.\n\nJi-woo: Hello! I'd be glad to help you manage your $350,000 portfolio. Protecting client capital while capturing balanced market growth is our key focus here.`
-          : candId === "john_doe"
-          ? `Client: I want a safe investment for my life savings of $500,000. Can you guarantee me that I will keep making profits?`
+          : activeCandidateId === "john_doe"
+          ? `Client: I want a safe investment for my life savings of $500,050. Can you guarantee me that I will keep making profits?`
           : `Client: I am looking to invest about $500,000, but I want to be 100% sure I won't lose money. My last advisor lost some during the 2022 downturn.`,
         critique: "Polite initial engagement, showing standard warm introductory alignment.",
         ideal: "Hello! Thank you for consulting with us. Let's design a protective but growing allocation plan for copy of your $350k portfolio."
@@ -114,9 +120,9 @@ export default function App() {
         timestamp: "00:35 - 01:15",
         status: authorityItem?.status || "PASS",
         criterion: "Authority",
-        dialogue: candId === "ji_woo_park"
+        dialogue: activeCandidateId === "ji_woo_park"
           ? `[Auditor Note] Confirmed directly that client Ji-woo is the sole decision maker and owner of the $350,000 funds.`
-          : candId === "john_doe"
+          : activeCandidateId === "john_doe"
           ? `[Auditor Note] FAILED AUTHORITY SEGMENT: Skipping verification of principal credentials or regulatory registration autonomy.`
           : `Sarah: Will we be registering this $500k portfolio individually, or does it require joint trust signatures?`,
         critique: authorityItem?.critique || "Confirmed decision-making credentials successfully.",
@@ -129,9 +135,9 @@ export default function App() {
         timestamp: "01:15 - 01:55",
         status: needsItem?.status || "PASS",
         criterion: "Needs",
-        dialogue: candId === "ji_woo_park"
+        dialogue: activeCandidateId === "ji_woo_park"
           ? `Client: Steady growth but safe.\nJi-woo: Protecting capital while capturing balanced market growth is our key focus here. We have some outstanding mutual funds...`
-          : candId === "john_doe"
+          : activeCandidateId === "john_doe"
           ? `John: Historically the market bounces back, and with our strategies I can practically guarantee you will keep making healthy profits of at least 10%...`
           : `Sarah: Protecting your hard-earned capital is our absolute priority. Before we look at strategies, let's explore your risk limits...`,
         critique: needsItem?.critique || "Audited core growth parameters and volatility comfort levels.",
@@ -144,9 +150,9 @@ export default function App() {
         timestamp: "01:55 - 02:40",
         status: budgetItem?.status || "PASS",
         criterion: "Budget",
-        dialogue: candId === "ji_woo_park"
+        dialogue: activeCandidateId === "ji_woo_park"
           ? `Client: What kind of fees do you charge? I see a 1% annual fee mentioned...\nJi-woo: Yes, we charge a standard 1%. That covers active tax-loss harvesting and continuous portfolio rebalancing.`
-          : candId === "john_doe"
+          : activeCandidateId === "john_doe"
           ? `Client: Fees sound expensive.\nJohn: Look, 1% is our absolute standard fee and it is extremely competitive. If you don't like it, you don't get management.`
           : `Sarah: I completely appreciate why you'd ask that. It is highly important to know exactly where your hard-earned money goes...`,
         critique: budgetItem?.critique || "Budget and fees handling checks.",
@@ -159,9 +165,9 @@ export default function App() {
         timestamp: "02:40 - 03:20",
         status: timelineItem?.status || "PASS",
         criterion: "Timeline",
-        dialogue: candId === "ji_woo_park"
+        dialogue: activeCandidateId === "ji_woo_park"
           ? `Client: When should we start? I'm in a bit of a hurry...\nJi-woo: We can get started as soon as next week. I will set up the asset accounts.`
-          : candId === "john_doe"
+          : activeCandidateId === "john_doe"
           ? `[Auditor Note] Skipped asking client when they need liquidity or what their overall wealth deployment horizon is.`
           : `Sarah: What is your preference on deploying these funds—would you prefer standard DCA over 6 months?`,
         critique: timelineItem?.critique || "Timeline criteria audited.",
@@ -174,9 +180,9 @@ export default function App() {
         timestamp: "03:20 - 04:10",
         status: complianceItem?.status || "PASS",
         criterion: "Compliance",
-        dialogue: candId === "ji_woo_park"
+        dialogue: activeCandidateId === "ji_woo_park"
           ? `Ji-woo: We are going to target high-performing equity funds to maximize your returns.`
-          : candId === "john_doe"
+          : activeCandidateId === "john_doe"
           ? `John: Practically guarantee you will keep making healthy profits of at least 10% each year without any risk of loss.`
           : `Sarah: Before we look at strategies, I want to be explicit: all market-linked investments carry some inherent risk, and past performance is not a guarantee...`,
         critique: complianceItem?.critique || "SEC guidelines alignment checklist audit.",
@@ -189,16 +195,16 @@ export default function App() {
         timestamp: "04:10 - 05:00",
         status: questionItem?.status || "PASS",
         criterion: "Question",
-        dialogue: candId === "ji_woo_park"
+        dialogue: activeCandidateId === "ji_woo_park"
           ? `Ji-woo: We can get started as soon as next week. I will set up the asset accounts.`
-          : candId === "john_doe"
+          : activeCandidateId === "john_doe"
           ? `[Auditor Note] Demanded absolute compliance with zero client dialogical interaction loops.`
           : `Sarah: How do you feel about high-quality corporate bonds as a counterweight to stock volatility?`,
         critique: questionItem?.critique || "End sequence check completed.",
         ideal: questionItem?.ideal_example || "What questions do you have about this checklist? Let's compile our action guidelines."
       }
     ];
-  };
+  }, [activeCandidateId, bantcqState]);
 
   // Reset states when candidate profile changes
   useEffect(() => {
@@ -220,9 +226,10 @@ export default function App() {
       const activeFails = candidateData.preparsedResult.bantcq_scoring.filter(b => b.status === "FAIL");
       if (activeFails.length > 0) {
         // Find the index of the first failing phase in call flow
-        const initialEvents = getCallFlowEvents(activeCandidateId);
         const failingCriterion = activeFails[0].criterion;
-        const matchingIdx = initialEvents.findIndex(ev => ev.criterion === failingCriterion);
+        const matchingIdx = ["opening", "authority", "needs", "budget", "timeline", "compliance", "closing"].findIndex(
+          criterion => criterion.toLowerCase() === failingCriterion.toLowerCase()
+        );
         if (matchingIdx !== -1) {
           setSelectedTimelineIndex(matchingIdx);
         } else {
@@ -234,6 +241,7 @@ export default function App() {
     }, 50);
 
   }, [activeCandidateId]);
+
 
   // Scroll co-pilot terminal
   useEffect(() => {
@@ -328,83 +336,53 @@ export default function App() {
     }`;
   };
 
-  // Custom analysis logic for new inputs
+  // Custom analysis logic for new inputs using live Gemini API proxy
   const handleAnalyze = async (transcript: string) => {
     setIsEvaluating(true);
     setEvalError(null);
 
-    // Simulated parser to map the customized transcript input to a new state candidate
-    setTimeout(() => {
-      try {
-        const containsRiskWarning = transcript.toLowerCase().includes("risk") || transcript.toLowerCase().includes("guarantee");
-        const containsTimeline = transcript.toLowerCase().includes("when") || transcript.toLowerCase().includes("timeline") || transcript.toLowerCase().includes("month");
+    try {
+      const response = await fetch("/api/evaluate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ transcript })
+      });
 
-        const customPreset: EvaluationResult = {
-          applicant_name: "Custom Ingested Candidate",
-          position: "Wealth Advisor",
-          overall_metrics: {
-            score: containsRiskWarning && containsTimeline ? 90 : containsRiskWarning ? 68 : 42,
-            tier: containsRiskWarning && containsTimeline ? "Gold" : containsRiskWarning ? "Silver" : "Bronze",
-            hire_recommendation: containsRiskWarning && containsTimeline ? "Direct Hire" : containsRiskWarning ? "Review" : "Do Not Hire",
-            talk_listen_ratio: "52:48"
-          },
-          executive_summary: {
-            strengths: "Decent interactive structure. Adapts conversation pace based on simulated customer signals.",
-            weaknesses: "Under-explained investment volatility details in several sequences."
-          },
-          compliance_checklist: [
-            {
-              checkpoint: "Stated Mandatory Risk Disclosure",
-              status: containsRiskWarning ? "PASS" : "FAIL",
-              critique: "Custom intake sequence audited.",
-              ideal_example: "All market investments carry inherent loss elements."
-            },
-            {
-              checkpoint: "Avoided Performance Guarantees",
-              status: "PASS",
-              critique: "No absolute returns promised.",
-              ideal_example: "We cannot formulate fixed rate profit values."
-            },
-            {
-              checkpoint: "Objection Cushioning",
-              status: "PASS",
-              critique: "Cushioned fee objections cleanly.",
-              ideal_example: "I completely appreciate your fee query. Standard management rates cover tax adjustments."
-            }
-          ],
-          tier_upgrade_advisor: {
-            primary_bottleneck: "Compliance & Structure Alignment",
-            coaching_prompt_seed: "Parsed custom scenario. Please choose the quick actions below to generate custom compliant practices."
-          },
-          bantcq_scoring: [
-            { criterion: "Budget", status: "PASS", score: 8, evidence: "Discussed assets", critique: "Analyzed budget", ideal_example: "I respect fees are key." },
-            { criterion: "Authority", status: "PASS", score: 7, evidence: "Direct client interaction", critique: "Passed authority checks", ideal_example: "Who is the principal owner?" },
-            { criterion: "Needs", status: "PASS", score: 8, evidence: "Aimed for growth", critique: "Validated needs", ideal_example: "Let's capture asset preservation." },
-            { criterion: "Timeline", status: containsTimeline ? "PASS" : "FAIL", score: containsTimeline ? 9 : 2, evidence: "Addressed setup timelines", critique: "Timeline parameters verification details.", ideal_example: "What is your withdrawal timeframe?" },
-            { criterion: "Compliance", status: containsRiskWarning ? "PASS" : "FAIL", score: containsRiskWarning ? 9 : 1, evidence: "Volatility check", critique: "SEC standards checklist audit.", ideal_example: "All market investing runs inherent risk." },
-            { criterion: "Question", status: "PASS", score: 8, evidence: "Encouraged questions", critique: "Interactive dialogue pacing.", ideal_example: "What questions do you have?" }
-          ],
-          linguistic_metrics: {
-            talk_listen_ratio: "52:48",
-            overlapping_speech: { detected: false, frequency: "None", details: "Pristine conversational turn boundaries." },
-            excessive_silence: { detected: false, details: "Fast, natural cadence throughout." },
-            pacing_feedback: "Optimal pacing of 138 WPM."
-          }
-        };
-
-        // Inject custom candidate preset
-        setBantcqState(customPreset.bantcq_scoring);
-        setComplianceState(customPreset.compliance_checklist);
-        setActiveTab("dashboard");
-        setCoachingChat([
-          { role: "model", content: `Successfully parsed custom transcript input!\n\n**Result:** Competency score calculated at **${customPreset.overall_metrics.score}% (${customPreset.overall_metrics.tier} Tier)**.\n\nUse the sidebar controls below to coaching this custom applicant.` }
-        ]);
-      } catch (err: any) {
-        setEvalError("Analysis failed to compile. Please assure custom transcript is descriptive.");
-      } finally {
-        setIsEvaluating(false);
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.error || "Evaluation failed on the server.");
       }
-    }, 1200);
+
+      const customPreset: EvaluationResult = await response.json();
+
+      // Inject custom candidate results directly to scorecard states!
+      setBantcqState(customPreset.bantcq_scoring);
+      setComplianceState(customPreset.compliance_checklist);
+      setActiveTab("dashboard");
+      
+      const activeFails = customPreset.bantcq_scoring.filter(b => b.status === "FAIL");
+      if (activeFails.length > 0) {
+        const failingCriterion = activeFails[0].criterion;
+        const matchingIdx = ["opening", "authority", "needs", "budget", "timeline", "compliance", "closing"].findIndex(
+          criterion => criterion.toLowerCase() === failingCriterion.toLowerCase()
+        );
+        setSelectedTimelineIndex(matchingIdx !== -1 ? matchingIdx : 0);
+      } else {
+        setSelectedTimelineIndex(0);
+      }
+
+      setCoachingChat([
+        { 
+          role: "model", 
+          content: `⚡ **Live Gemini Analysis Complete!**\n\nCustom Ingestion Score: **${customPreset.overall_metrics.score}% (${customPreset.overall_metrics.tier} Tier)**.\n\n**Primary Bottleneck Identified:**\n${customPreset.tier_upgrade_advisor.primary_bottleneck}\n\n*Feel free to deploy script drills or speak directly with the AI Virtual Coach using the terminal below.*` 
+        }
+      ]);
+    } catch (err: any) {
+      console.error("Evaluation trigger error:", err);
+      setEvalError(err.message || "Failed to reach the Gemini Evaluation Service. Ensure process.env.GEMINI_API_KEY is defined.");
+    } finally {
+      setIsEvaluating(false);
+    }
   };
 
   // Co-Pilot Fast Actions
@@ -490,26 +468,51 @@ AI Training Assistant // VOTEST Global`;
     ]);
   };
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!coachingInput.trim()) return;
+    if (!coachingInput.trim() || isCoaching) return;
 
     const userText = coachingInput.trim();
     setCoachingInput("");
 
-    setCoachingChat(prev => [
-      ...prev,
-      { role: "user", content: userText }
-    ]);
-
+    const updatedChat = [
+      ...coachingChat,
+      { role: "user" as const, content: userText }
+    ];
+    setCoachingChat(updatedChat);
     setIsCoaching(true);
-    setTimeout(() => {
+
+    try {
+      const currentSeed = activeCandidate.preparsedResult.tier_upgrade_advisor.coaching_prompt_seed;
+
+      const response = await fetch("/api/coaching-drill", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: updatedChat.map(m => ({ role: m.role, content: m.content })),
+          coaching_seed: currentSeed
+        })
+      });
+
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.error || "Failed to reach virtual coach.");
+      }
+
+      const resData = await response.json();
       setCoachingChat(prev => [
         ...prev,
-        { role: "model", content: `Understood. Practicing with candidate **${activeCandidate.name}**. Let us practice the perfect response: "All market-linked investments carry risk, and we cannot guarantee profits. Let's design a protective layout for your portfolio."` }
+        { role: "model" as const, content: resData.response }
       ]);
+    } catch (err: any) {
+      console.error(err);
+      setCoachingChat(prev => [
+        ...prev,
+        { role: "system" as const, content: `⚠️ Error contacting the Coach: ${err.message || "Internal connection issue."}` }
+      ]);
+    } finally {
       setIsCoaching(false);
-    }, 600);
+    }
   };
 
   const handleCopyToClipboard = (text: string) => {
@@ -626,8 +629,8 @@ AI Training Assistant // VOTEST Global`;
         }`}>
           <div className="flex items-center gap-2 font-mono font-bold">
             <span className={`w-2.5 h-2.5 rounded-full animate-pulse ${dynamicScore >= 90 ? "bg-emerald-400" : dynamicScore >= 65 ? "bg-amber-400" : "bg-red-400"}`}></span>
-            <span className="uppercase text-slate-400">STATUS:</span>
-            <span>PROPRIETARY BANTCQ & CHRONO AUDIT LOGS ACTIVE</span>
+            <span className="uppercase text-slate-400">Status:</span>
+            <span>Candidate Evaluation Scorecard Active</span>
           </div>
           <div className="flex items-center gap-4 text-[11px]">
             <span>Active Candidate: <strong className="text-orange-400 font-mono">{activeCandidate.name}</strong></span>
@@ -1031,7 +1034,7 @@ AI Training Assistant // VOTEST Global`;
                           
                           <div className="space-y-2">
                             {bantcqState.map((chk) => {
-                              const matchingIdx = getCallFlowEvents(activeCandidateId).findIndex(ev => ev.criterion === chk.criterion);
+                              const matchingIdx = callFlowEvents.findIndex(ev => ev.criterion === chk.criterion);
                               const isSelected = selectedTimelineIndex === matchingIdx;
                               
                               return (
@@ -1135,7 +1138,7 @@ AI Training Assistant // VOTEST Global`;
                             ></div>
 
                             <div className="relative flex justify-between items-center">
-                              {getCallFlowEvents(activeCandidateId).map((event, idx) => {
+                              {callFlowEvents.map((event, idx) => {
                                 const isSelected = selectedTimelineIndex === idx;
                                 const isFail = event.status === "FAIL";
                                 
@@ -1180,16 +1183,16 @@ AI Training Assistant // VOTEST Global`;
                             </div>
                           </div>
 
-                          <div className="mt-4 p-2.5 bg-slate-950/40 border border-slate-805 rounded-xl flex items-center justify-between text-[10.5px] font-mono text-slate-300">
+                          <div className="mt-4 p-2.5 bg-slate-950/40 border border-slate-800 rounded-xl flex items-center justify-between text-[10.5px] font-mono text-slate-300">
                             <div className="flex items-center gap-1.5 truncate">
                               <span className="w-2 h-2 rounded-full bg-sky-500 animate-pulse"></span>
                               <span className="text-slate-400 uppercase font-black text-[9px] shrink-0">TRACKING CO-ORDINATE:</span>
                               <span className="text-white font-extrabold truncate">
-                                {getCallFlowEvents(activeCandidateId)[selectedTimelineIndex].phase_name} ({getCallFlowEvents(activeCandidateId)[selectedTimelineIndex].korean_name})
+                                {callFlowEvents[selectedTimelineIndex].phase_name} ({callFlowEvents[selectedTimelineIndex].korean_name})
                               </span>
                             </div>
                             <span className="text-sky-300 font-black text-[9.5px] shrink-0 ml-1.5 font-mono">
-                              {getCallFlowEvents(activeCandidateId)[selectedTimelineIndex].timestamp}
+                              {callFlowEvents[selectedTimelineIndex].timestamp}
                             </span>
                           </div>
 
@@ -1215,11 +1218,11 @@ AI Training Assistant // VOTEST Global`;
                               Segment {selectedTimelineIndex + 1}
                             </span>
                             <span className={`px-2 py-0.5 text-[8.5px] font-black uppercase tracking-wider rounded border ${
-                              getCallFlowEvents(activeCandidateId)[selectedTimelineIndex].status === "PASS"
+                              callFlowEvents[selectedTimelineIndex].status === "PASS"
                                 ? "bg-emerald-50 text-emerald-800 border-emerald-300"
                                 : "bg-red-50 text-red-800 border-red-300 animate-pulse"
                             }`}>
-                              {getCallFlowEvents(activeCandidateId)[selectedTimelineIndex].status}
+                              {callFlowEvents[selectedTimelineIndex].status}
                             </span>
                           </div>
                           <span className="text-[9.5px] font-mono text-slate-400 uppercase font-bold">
@@ -1228,54 +1231,54 @@ AI Training Assistant // VOTEST Global`;
                         </div>
 
                         <h3 className="text-lg font-bold uppercase tracking-tight mb-2">
-                          {getCallFlowEvents(activeCandidateId)[selectedTimelineIndex].phase_name} ({getCallFlowEvents(activeCandidateId)[selectedTimelineIndex].korean_name})
+                          {callFlowEvents[selectedTimelineIndex].phase_name} ({callFlowEvents[selectedTimelineIndex].korean_name})
                         </h3>
 
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch">
                           
                           {/* Simulated Dialogue Box */}
-                          <div className="p-4 bg-slate-950 text-amber-100 rounded-xl border-l-4 border-amber-400 font-mono text-[11.5px] leading-relaxed flex flex-col justify-between shadow-sm">
+                          <div className="p-4 bg-slate-950 text-amber-105 rounded-xl border-l-4 border-amber-400 font-mono text-[11.5px] leading-relaxed flex flex-col justify-between shadow-sm">
                             <div>
                               <span className="text-[9px] font-mono font-black uppercase tracking-wider text-amber-400 block mb-3 border-b border-amber-900/50 pb-1.5">
                                 🎙️ Transcript:
                               </span>
                               <p className="whitespace-pre-wrap leading-relaxed italic select-all select-none">
-                                {getCallFlowEvents(activeCandidateId)[selectedTimelineIndex].dialogue}
+                                {callFlowEvents[selectedTimelineIndex].dialogue}
                               </p>
                             </div>
                             <div className="mt-4 pt-2 border-t border-amber-950/40 text-[9.5px] text-slate-500 text-right font-mono font-medium">
-                              Timestamp: {getCallFlowEvents(activeCandidateId)[selectedTimelineIndex].timestamp}
+                              Timestamp: {callFlowEvents[selectedTimelineIndex].timestamp}
                             </div>
                           </div>
 
                           {/* Critical Assessment & ideal phrasing suggestion */}
                           <div className={`p-4 rounded-xl border flex flex-col justify-between transition-colors ${
-                            theme === "dark" ? "bg-slate-900 border-slate-800" : "bg-slate-50 border-slate-205"
+                            theme === "dark" ? "bg-slate-900 border-slate-800" : "bg-slate-50 border-slate-200"
                           }`}>
                             <div>
                               <span className="text-[9.5px] font-black font-mono text-slate-400 uppercase block mb-1">
                                 Feedback Notes:
                               </span>
                               <p className={`text-xs leading-relaxed font-semibold mb-4 ${
-                                theme === "dark" ? "text-slate-205" : "text-slate-800"
+                                theme === "dark" ? "text-slate-200" : "text-slate-800"
                               }`}>
-                                {getCallFlowEvents(activeCandidateId)[selectedTimelineIndex].critique}
+                                {callFlowEvents[selectedTimelineIndex].critique}
                               </p>
 
                               <span className="text-[9.5px] font-black font-mono text-slate-400 uppercase block mb-1">
                                 Ideal Response (권장 가이드 발언):
                               </span>
-                              <div className="bg-emerald-50/90 border border-emerald-250 text-emerald-950 p-3 rounded-lg text-[11px] font-mono font-bold leading-normal italic">
-                                "{getCallFlowEvents(activeCandidateId)[selectedTimelineIndex].ideal}"
+                              <div className="bg-emerald-50/90 border border-emerald-300 text-emerald-950 p-3 rounded-lg text-[11px] font-mono font-bold leading-normal italic">
+                                "{callFlowEvents[selectedTimelineIndex].ideal}"
                               </div>
                             </div>
 
                             {/* Actions bar inside detailed segment */}
-                            <div className="mt-4 flex flex-wrap justify-end gap-2 border-t border-dashed border-slate-200 pt-3">
-                              {getCallFlowEvents(activeCandidateId)[selectedTimelineIndex].status === "FAIL" && (
+                            <div className="mt-4 flex flex-wrap justify-end gap-2 border-t border-dashed border-slate-250 pt-3">
+                              {callFlowEvents[selectedTimelineIndex].status === "FAIL" && (
                                 <button
                                   onClick={() => {
-                                    const matchingBant = bantcqState.find(b => b.criterion === getCallFlowEvents(activeCandidateId)[selectedTimelineIndex].criterion);
+                                    const matchingBant = bantcqState.find(b => b.criterion === callFlowEvents[selectedTimelineIndex].criterion);
                                     if (matchingBant) {
                                       setExecutionModalItem(matchingBant);
                                     }
@@ -1293,13 +1296,13 @@ AI Training Assistant // VOTEST Global`;
                                   setTimeout(() => {
                                     setCoachingChat(prev => [
                                       ...prev,
-                                      { role: "user", content: `Generate script drill for ${getCallFlowEvents(activeCandidateId)[selectedTimelineIndex].phase_name}` },
-                                      { role: "model", content: `**VOTEST Realtime Drill Launched:** Here is the compliance scenario for **${getCallFlowEvents(activeCandidateId)[selectedTimelineIndex].phase_name}**:\n\n* **Audited Failure Context:** "${getCallFlowEvents(activeCandidateId)[selectedTimelineIndex].critique}"\n* **Your Goal Compliance Statement:** "${getCallFlowEvents(activeCandidateId)[selectedTimelineIndex].ideal}"\n\nPracticing with current candidate file loaded.` }
+                                      { role: "user", content: `Generate script drill for ${callFlowEvents[selectedTimelineIndex].phase_name}` },
+                                      { role: "model", content: `**VOTEST Realtime Drill Launched:** Here is the compliance scenario for **${callFlowEvents[selectedTimelineIndex].phase_name}**:\n\n* **Audited Failure Context:** "${callFlowEvents[selectedTimelineIndex].critique}"\n* **Your Goal Compliance Statement:** "${callFlowEvents[selectedTimelineIndex].ideal}"\n\nPracticing with current candidate file loaded.` }
                                     ]);
                                     setIsCoaching(false);
                                   }, 500);
                                 }}
-                                className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-[10px] font-bold uppercase rounded-lg border border-slate-850 shadow-sm cursor-pointer decoration-none font-sans"
+                                className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-[10px] font-bold uppercase rounded-lg border border-slate-800 shadow-sm cursor-pointer decoration-none font-sans"
                               >
                                 Deploy interactive drill
                               </button>
@@ -1676,237 +1679,85 @@ AI Training Assistant // VOTEST Global`;
             <span className="text-xs font-display tracking-widest uppercase">Ask AI Assistant</span>
           </button>
 
-          {/* Hidden legacy aside structure to avoid layout/compilation conflict */}
-          <aside className="hidden">
-            
-            <div className="flex flex-col flex-grow">
-              
-              {/* Sidebar Header */}
-              <div className="p-6 border-b-2 border-slate-800 bg-slate-900 flex items-center justify-between gap-3 shrink-0">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-xl bg-orange-500 flex items-center justify-center text-slate-950 shrink-0 shadow-sm border border-orange-400">
-                    <Sparkles className="w-5 h-5 text-slate-950" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-extrabold tracking-tight uppercase font-display leading-tight">
-                      AI Training Assistant
-                    </h3>
-                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider leading-none">
-                      Integrated Coaching & How to Improve
-                    </p>
-                  </div>
-                </div>
-                
-                <span className="text-[9px] text-emerald-400 font-mono font-bold leading-none bg-emerald-950/80 border border-emerald-900 px-2 py-1 rounded">
-                  ONLINE
-                </span>
-              </div>
-
-              {/* Chat bubble body container containing the dynamic coaching roadmap */}
-              <div className="p-6 flex-grow flex flex-col gap-5 overflow-y-auto max-h-[500px] lg:max-h-[580px]">
-                
-                {/* Pre-populated dynamic assessment directive based on failures */}
-                <div className="bg-slate-900/80 border-2 border-orange-500/35 rounded-xl p-4.5 shadow-[0_0_15px_rgba(249,115,22,0.1)]">
-                  <span className="text-[9px] font-mono font-black text-orange-400 uppercase tracking-widest block mb-2">
-                    ⚡ DIRECTIVE: AUTOMATED REAL-TIME AUDIT
-                  </span>
-                  <div className="text-[11.5px] leading-relaxed text-slate-200 whitespace-pre-wrap font-sans">
-                    {getDynamicAIDirective()}
-                  </div>
-                </div>
-
-                <div className="text-[10px] font-mono font-black text-slate-500 uppercase tracking-widest block pb-1 border-b border-slate-800">
-                  AI ASSISTANT INTERACTIVE WORKPLACE
-                </div>
-
-                <div className="space-y-4">
-                  {coachingChat.map((msg, index) => {
-                    const isUser = msg.role === "user";
-                    const isRoadmapBubble = msg.key === "roadmap";
-
-                    return (
-                      <div
-                        key={index}
-                        className={`flex flex-col ${isUser ? "items-end" : "items-start"}`}
-                      >
-                        <span className="text-[9px] font-mono font-bold text-slate-500 uppercase tracking-wider mb-1">
-                          {isUser ? "USER EXECUTION" : "VOTEST COACH"}
-                        </span>
-                        
-                        <div
-                          className={`p-4 rounded-xl leading-relaxed text-[11.5px] relative ${
-                            isUser
-                              ? "bg-slate-900 text-sky-300 border border-slate-800 rounded-tr-none min-w-[75%]"
-                              : isRoadmapBubble
-                              ? "bg-slate-900/60 text-slate-350 border border-slate-800 rounded-tl-none font-sans font-medium"
-                              : "bg-slate-900 text-slate-200 border border-slate-800 rounded-tl-none"
-                          }`}
-                        >
-                          <div className="whitespace-pre-wrap leading-relaxed">{msg.content}</div>
-
-                          {/* Email copy helper */}
-                          {msg.content.includes("Subject: Feedback") && (
-                            <button
-                              onClick={() => handleCopyToClipboard(msg.content)}
-                              className="mt-3 w-full py-2 bg-slate-800 hover:bg-slate-750 text-white font-bold text-[10px] uppercase tracking-wider flex items-center justify-center gap-2 border border-slate-700 rounded-lg transition-all cursor-pointer"
-                            >
-                              <Copy className="w-3.5 h-3.5 text-slate-400" />
-                              {copiedText || "Copy Email to Clipboard"}
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                  
-                  {isCoaching && (
-                    <div className="flex items-center gap-2 text-[11px] font-mono text-slate-400 italic">
-                      <RefreshCw className="w-3.5 h-3.5 animate-spin text-orange-500" />
-                      Advisor compiling compliance workouts...
-                    </div>
-                  )}
-
-                  <div ref={chatBottomRef} />
-                </div>
-              </div>
-
-            </div>
-
-            {/* Side-bar Actions & Chat Input Terminal */}
-            <div className="p-6 border-t border-slate-800 bg-slate-900 flex flex-col gap-4 shrink-0">
-              
-              {/* MANAGER ACTIONS COMPONENT */}
-              <div>
-                <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest block mb-2 font-mono">
-                  Advisor Action Control panel
-                </span>
-                <div className="grid grid-cols-1 gap-2">
-                  
-                  {/* Action 1: Get Script Drill */}
-                  <button
-                    onClick={handleGetScriptDrill}
-                    disabled={isCoaching}
-                    className="w-full py-2.5 px-3 bg-slate-950 hover:bg-slate-850 text-[11px] font-extrabold uppercase text-orange-300 border border-orange-500/30 hover:border-orange-500 rounded-lg flex items-center justify-between transition-all cursor-pointer group"
-                  >
-                    <span className="flex items-center gap-2">
-                      <BookOpen className="w-4 h-4 text-orange-400 group-hover:scale-105 transition-transform" />
-                      Get Script Drill
-                    </span>
-                    <ChevronRight className="w-3.5 h-3.5 text-slate-600" />
-                  </button>
-
-                  {/* Action 2: Explain Failure */}
-                  <button
-                    onClick={handleExplainFailure}
-                    disabled={isCoaching}
-                    className="w-full py-2.5 px-3 bg-slate-950 hover:bg-slate-850 text-[11px] font-extrabold uppercase text-sky-300 border border-sky-500/30 hover:border-sky-500 rounded-lg flex items-center justify-between transition-all cursor-pointer group"
-                  >
-                    <span className="flex items-center gap-2">
-                      <AlertTriangle className="w-4 h-4 text-sky-400 group-hover:scale-105 transition-transform" />
-                      Explain Failure
-                    </span>
-                    <ChevronRight className="w-3.5 h-3.5 text-slate-600" />
-                  </button>
-
-                  {/* Action 3: Generate Email to Candidate */}
-                  <button
-                    onClick={handleGenerateEmail}
-                    disabled={isCoaching}
-                    className="w-full py-2.5 px-3 bg-slate-950 hover:bg-slate-850 text-[11px] font-extrabold uppercase text-emerald-300 border border-emerald-500/30 hover:border-emerald-500 rounded-lg flex items-center justify-between transition-all cursor-pointer group"
-                  >
-                    <span className="flex items-center gap-2">
-                      <Mail className="w-4 h-4 text-emerald-400 group-hover:scale-105 transition-transform" />
-                      Generate Email to Candidate
-                    </span>
-                    <ChevronRight className="w-3.5 h-3.5 text-slate-600" />
-                  </button>
-
-                </div>
-              </div>
-
-              {/* Chat Input form */}
-              <form onSubmit={handleSendMessage} className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Ask AI Assistant questions or query SEC rules..."
-                  value={coachingInput}
-                  onChange={(e) => setCoachingInput(e.target.value)}
-                  className="flex-grow bg-slate-950 text-white font-mono text-[11px] border border-slate-700 rounded-lg px-3 py-3 focus:outline-none focus:border-orange-500 placeholder-slate-600"
-                />
-                <button
-                  type="submit"
-                  disabled={isCoaching || !coachingInput.trim()}
-                  className="bg-orange-500 hover:bg-orange-400 text-slate-950 font-black text-xs uppercase px-4 rounded-lg cursor-pointer transition-colors flex items-center justify-center shrink-0"
-                >
-                  <Send className="w-4.5 h-4.5" />
-                </button>
-              </form>
-
-            </div>
-
-          </aside>
-
         </div>
 
         {/* INLINE BEST-PRACTICE EXAMPLE MODAL PORTAL */}
-        {executionModalItem && (
-          <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white border-4 border-slate-950 max-w-lg w-full rounded-2xl p-6 shadow-[8px_8px_0px_0px_rgba(2,6,23,1)] overflow-hidden">
-              <div className="flex items-center justify-between pb-3.5 border-b-2 border-slate-200">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-1.5 bg-rose-50 border-2 border-rose-955 text-rose-950 rounded-xl">
-                    <Award className="w-5 h-5 text-rose-700" />
+        <AnimatePresence>
+          {executionModalItem && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 bg-slate-950/70 backdrop-blur-sm"
+                onClick={() => setExecutionModalItem(null)}
+              />
+              
+              <motion.div 
+                ref={modalRef}
+                tabIndex={-1}
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                className="relative bg-white border-4 border-slate-950 max-w-lg w-full rounded-2xl p-6 shadow-[8px_8px_0px_0px_rgba(2,6,23,1)] overflow-hidden focus:outline-none"
+              >
+                <div className="flex items-center justify-between pb-3.5 border-b-2 border-slate-200">
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-1.5 bg-rose-50 border-2 border-rose-950 text-rose-950 rounded-xl">
+                      <Award className="w-5 h-5 text-rose-700" />
+                    </div>
+                    <div>
+                      <h4 className="font-extrabold text-slate-950 text-base leading-tight">
+                        Ideal Consultation Phrasing
+                      </h4>
+                      <p className="text-[10px] text-slate-500 font-mono tracking-wider font-bold uppercase leading-none">
+                        {executionModalItem.criterion === "Compliance" ? "SEC Regulatory Accord Standards" : `${executionModalItem.criterion} Phase standard`}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="font-extrabold text-slate-950 text-base leading-tight">
-                      Ideal Consultation Phrasing
-                    </h4>
-                    <p className="text-[10px] text-slate-500 font-mono tracking-wider font-bold uppercase leading-none">
-                      {executionModalItem.criterion === "Compliance" ? "SEC Regulatory Accord Standards" : `${executionModalItem.criterion} Phase standard`}
-                    </p>
+                  <button
+                    onClick={() => setExecutionModalItem(null)}
+                    className="p-1 hover:bg-slate-100 rounded-lg border border-slate-200 text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {/* Ideal phrase blockquote */}
+                <div className="my-5 bg-slate-900 p-5 rounded-xl border-l-4 border-amber-400">
+                  <span className="text-[9px] font-mono font-black uppercase text-amber-350 block mb-1.5">
+                    🏆 COMPLIANT PHRASING MODEL // 이상적인 발언 가이드:
+                  </span>
+                  <blockquote className="text-sm font-semibold text-white leading-relaxed italic font-mono select-all">
+                    "{executionModalItem.ideal_example}"
+                  </blockquote>
+                </div>
+
+                <div className="text-xs text-slate-600 leading-relaxed bg-slate-50 border border-slate-200 p-3.5 rounded-xl">
+                  <div className="font-black text-slate-800 text-[10px] uppercase tracking-wider mb-1">
+                    CRITIQUE FROM VOTEST ENGINE // 자동 평가 피드백:
+                  </div>
+                  <p className="leading-relaxed font-semibold mb-2.5 text-slate-800">
+                    {executionModalItem.critique}
+                  </p>
+                  <div className="text-[10px] text-slate-500 leading-normal border-t border-slate-200 pt-2 font-mono">
+                    *By employing this standard formula, advisors establish legal defensive alignment, avoid false expectations, and successfully build trustworthy customer sequences.
                   </div>
                 </div>
-                <button
-                  onClick={() => setExecutionModalItem(null)}
-                  className="p-1 hover:bg-slate-100 rounded-lg border border-slate-200 text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
 
-              {/* Ideal phrase blockquote */}
-              <div className="my-5 bg-slate-900 p-5 rounded-xl border-l-4 border-amber-400">
-                <span className="text-[9px] font-mono font-black uppercase text-amber-300 block mb-1.5">
-                  🏆 COMPLIANT PHRASING MODEL // 이상적인 발언 가이드:
-                </span>
-                <blockquote className="text-sm font-semibold text-white leading-relaxed italic font-mono select-all">
-                  "{executionModalItem.ideal_example}"
-                </blockquote>
-              </div>
-
-              <div className="text-xs text-slate-600 leading-relaxed bg-slate-50 border border-slate-200 p-3.5 rounded-xl">
-                <div className="font-black text-slate-800 text-[10px] uppercase tracking-wider mb-1">
-                  CRITIQUE FROM VOTEST ENGINE // 자동 평가 피드백:
+                <div className="mt-5 flex justify-end">
+                  <button
+                    onClick={() => setExecutionModalItem(null)}
+                    className="px-4 py-2 bg-slate-950 hover:bg-slate-850 text-white font-black text-xs uppercase rounded-lg border border-slate-950 shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] cursor-pointer"
+                  >
+                    Dismiss Guide
+                  </button>
                 </div>
-                <p className="leading-relaxed font-semibold mb-2.5">
-                  {executionModalItem.critique}
-                </p>
-                <div className="text-[10px] text-slate-500 leading-normal border-t border-slate-200 pt-2 font-mono">
-                  *By employing this standard formula, advisors establish legal defensive alignment, avoid false expectations, and successfully build trustworthy customer sequences.
-                </div>
-              </div>
-
-              <div className="mt-5 flex justify-end">
-                <button
-                  onClick={() => setExecutionModalItem(null)}
-                  className="px-4 py-2 bg-slate-950 hover:bg-slate-850 text-white font-black text-xs uppercase rounded-lg border border-slate-950 shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] cursor-pointer"
-                >
-                  Dismiss Guide
-                </button>
-              </div>
+              </motion.div>
             </div>
-          </div>
-        )}
+          )}
+        </AnimatePresence>
 
         {/* SYSTEM AUDIT COMPANION FOOTER */}
         <footer className="bg-white border-t-4 border-slate-950 px-6 py-4 flex flex-col md:flex-row items-center justify-between text-[11px] text-slate-500 gap-3 shrink-0">
