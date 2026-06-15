@@ -34,8 +34,236 @@ import {
   Volume2,
   Mic,
   Zap,
-  ListFilter
+  ListFilter,
+  Globe
 } from "lucide-react";
+
+const translations = {
+  en: {
+    title: "VOTEST",
+    subtitle: "VODA Bi Conversational Intelligence Auditing Panel // English/Korean Global Portal",
+    presetLabel: "SELECT REAL-TIME COMPLIANCE REPORT PRESETS:",
+    statusLabel: "Status:",
+    statusActive: "Candidate Evaluation Scorecard Active",
+    activeCandidate: "Active Candidate",
+    targetRole: "Target Role",
+    pitchTheme: "PITCH THEME:",
+    themeLight: "Light",
+    themeDark: "Dark",
+    activeFileLabel: "Active Screening Candidate File // VODA BI VOTEST",
+    competencyRating: "VOTEST COMPETENCY RATING",
+    gradeLabel: "EVALUATION GRADE",
+    recommendationLabel: "HIRE RECOMMENDATION",
+    strengthsLabel: "DETECTED CONSULTATIVE STRENGTHS",
+    weaknessesLabel: "AREAS FOR CORE CLINICAL IMPROVEMENT",
+    coachingRoadmapButton: "Open AI Training Assistant Co-Pilot",
+    metricsTitle: "AUTOMATED CORE CONVERSATIONAL METRICS",
+    talkRatioLabel: "Talk/Listen Ratio",
+    wpmSpeedLabel: "Candidate WPM Speed Gauge",
+    tempoAnalysis: "Tempo Speech Analysis",
+    overlappingLabel: "Overlap Interruptions",
+    silentGapsLabel: "Silent Gaps",
+    dashboardTab: "Analytics Dashboard",
+    timelineTab: "Sequence Checklist",
+    matrixTab: "BANTCQ Matrix",
+    sandboxTab: "Try Transcript Ingestion",
+    showingEntries: "Showing {start} to {end} of {total} entries",
+    pageLabel: "PAGE",
+    flipBtn: "Flip",
+    customDrillsTitle: "DEPLOY DIRECT INTERACTIVE REMEDIATION DRILLS",
+    customDrillsSubtitle: "Target key vulnerabilities immediately. Clicking a drill injects specific regulatory simulations into the AI Co-Pilot drawer.",
+    complianceExplainerTitle: "Automated Feedback & Required SEC Action Steps",
+    complianceExplainerDesc: "Review and deploy interactive scenarios for failed criteria.",
+    seeIdealExecution: "See Ideal Execution",
+    noAuditedEvidence: "NO AUDITED EVIDENCE LOGGED",
+    interactiveStatusToggle: "Interactive Status Toggle",
+    transcriptEvidenceHeading: "Transcript Evidence (검출 대사)",
+    idealPhrasingHeading: "Ideal Compliance Phrasing (모범 발화 예시)",
+    segmentHeader: "Segment & Korean Param (평가 항목)",
+    coachingPromptSeedTitle: "AI ASSISTANT INTERACTIVE WORKPLACE",
+    coachingInputPlaceholder: "Practice responding to the client's objection here...",
+    coachingSendBtn: "Send Practice Reply",
+    coachingGenerating: "Coach Analyzing Response...",
+    instantFeedbackRoadmap: "⚡ INSTANT FEEDBACK & ROADMAP",
+  },
+  ko: {
+    title: "VOTEST (보테스트)",
+    subtitle: "VODA Bi 대화형 AI 규제 준수 심사 패널 // 한국어 및 영어 글로벌 포털",
+    presetLabel: "실시간 규제 준수 보고서 프리셋 선택:",
+    statusLabel: "상태:",
+    statusActive: "지원자 평가 스코어카드 활성화됨",
+    activeCandidate: "평가 대상자",
+    targetRole: "목표 직무",
+    pitchTheme: "테마 변경:",
+    themeLight: "라이트",
+    themeDark: "다크",
+    activeFileLabel: "현재 진행 중인 심사 지원자 파일 // VODA BI VOTEST",
+    competencyRating: "VOTEST 역량 평가 등급",
+    gradeLabel: "평가 등급",
+    recommendationLabel: "채용 추천 의견",
+    strengthsLabel: "감지된 상담 우수 역량 (강점)",
+    weaknessesLabel: "주요 클리니컬 개선 과제 (약점)",
+    coachingRoadmapButton: "AI 트레이닝 어시스턴트 코파일럿 열기",
+    metricsTitle: "자동화된 핵심 대화 메트릭 지표",
+    talkRatioLabel: "본인 발화 대 청취 비율 (Talk/Listen)",
+    wpmSpeedLabel: "지원자 분당 발화 속도 측정 (WPM)",
+    tempoAnalysis: "말하기 속도 및 전반 템포 분석",
+    overlappingLabel: "동시 발화 및 중단 횟수 (Overlap)",
+    silentGapsLabel: "어색한 침묵 및 공백 발생 (Silent)",
+    dashboardTab: "경영진 대시보드",
+    timelineTab: "구간별 체크리스트",
+    matrixTab: "BANTCQ 종합 매트릭스",
+    sandboxTab: "가상 인터뷰 실습실/원고 추가",
+    showingEntries: "총 {total}개 항목 중 {start} ~ {end} 표시 중",
+    pageLabel: "페이지",
+    flipBtn: "전환",
+    customDrillsTitle: "대화 분석 기반 1:1 맞춤형 실습 훈련 배포",
+    customDrillsSubtitle: "감지된 취약점에 맞춘 롤플레잉 상황극을 배포합니다. 훈련 카드를 클릭하면 AI 코파일럿에 실시간 규제 시뮬레이션이 로드됩니다.",
+    complianceExplainerTitle: "자동 피드백 및 필수 SEC 조치 단계",
+    complianceExplainerDesc: "실패한 기준에 대해 상호 대화식 시나리오를 검토하고 배포해 보세요.",
+    seeIdealExecution: "모범 예시 보기",
+    noAuditedEvidence: "심사 대상 증거가 검출되지 않음",
+    interactiveStatusToggle: "인터랙티브 합격/실패 강제 전환",
+    transcriptEvidenceHeading: "전체 녹취 증거 대사 (Transcript Evidence)",
+    idealPhrasingHeading: "모범 규제 준수 발화 (Ideal Compliance)",
+    segmentHeader: "평가 항목 및 상세 부문 (Criterion)",
+    coachingPromptSeedTitle: "AI 어시스턴트 개인 대화형 훈련소",
+    coachingInputPlaceholder: "여기에 클라이언트 의견에 대응할 모범 상담원 답변을 연습해보세요...",
+    coachingSendBtn: "연습 답변 전송",
+    coachingGenerating: "코치가 회원님의 답변을 실시간 채점 중...",
+    instantFeedbackRoadmap: "⚡ 즉각 피드백 및 목표 로드맵",
+  }
+};
+
+const parseMessageContentInline = (text: string) => {
+  const parts = [];
+  let currentText = text;
+  let starIdx = currentText.indexOf("**");
+  
+  while (starIdx !== -1) {
+    if (starIdx > 0) {
+      parts.push({ text: currentText.substring(0, starIdx), isBold: false });
+    }
+    
+    const nextStarIdx = currentText.indexOf("**", starIdx + 2);
+    if (nextStarIdx !== -1) {
+      const boldText = currentText.substring(starIdx + 2, nextStarIdx);
+      parts.push({ text: boldText, isBold: true });
+      currentText = currentText.substring(nextStarIdx + 2);
+    } else {
+      parts.push({ text: currentText.substring(starIdx), isBold: false });
+      currentText = "";
+    }
+    starIdx = currentText.indexOf("**");
+  }
+  
+  if (currentText) {
+    parts.push({ text: currentText, isBold: false });
+  }
+
+  return parts.map((p, pIdx) => {
+    if (p.isBold) {
+      return (
+        <strong 
+          key={pIdx} 
+          className="text-orange-400 font-extrabold px-1 py-0.5 rounded-md bg-orange-500/10 inline-block align-baseline"
+        >
+          {p.text}
+        </strong>
+      );
+    }
+    return <span key={pIdx}>{p.text}</span>;
+  });
+};
+
+const parseMessageContent = (text: string) => {
+  if (!text) return null;
+  
+  const lines = text.split("\n");
+  return lines.map((line, lineIdx) => {
+    let isHeading = false;
+    let headingLevel = 0;
+    let processedLine = line;
+    
+    if (line.startsWith("### ")) {
+      isHeading = true;
+      headingLevel = 3;
+      processedLine = line.substring(4);
+    } else if (line.startsWith("## ")) {
+      isHeading = true;
+      headingLevel = 2;
+      processedLine = line.substring(3);
+    } else if (line.startsWith("# ")) {
+      isHeading = true;
+      headingLevel = 1;
+      processedLine = line.substring(2);
+    }
+    
+    const parts = [];
+    let currentText = processedLine;
+    let starIdx = currentText.indexOf("**");
+    
+    while (starIdx !== -1) {
+      if (starIdx > 0) {
+        parts.push({ text: currentText.substring(0, starIdx), isBold: false });
+      }
+      
+      const nextStarIdx = currentText.indexOf("**", starIdx + 2);
+      if (nextStarIdx !== -1) {
+        const boldText = currentText.substring(starIdx + 2, nextStarIdx);
+        parts.push({ text: boldText, isBold: true });
+        currentText = currentText.substring(nextStarIdx + 2);
+      } else {
+        parts.push({ text: currentText.substring(starIdx), isBold: false });
+        currentText = "";
+      }
+      starIdx = currentText.indexOf("**");
+    }
+    
+    if (currentText) {
+      parts.push({ text: currentText, isBold: false });
+    }
+
+    const renderedParts = parts.map((p, pIdx) => {
+      if (p.isBold) {
+        return (
+          <strong 
+            key={pIdx} 
+            className="text-orange-400 font-extrabold px-1.5 py-0.5 rounded-md bg-orange-500/10 inline-block align-baseline tracking-normal"
+          >
+            {p.text}
+          </strong>
+        );
+      }
+      return <span key={pIdx}>{p.text}</span>;
+    });
+
+    if (isHeading) {
+      if (headingLevel === 1) {
+        return <h1 key={lineIdx} className="text-sm font-black uppercase text-orange-400 mt-3 mb-1.5 border-b border-slate-800 pb-1">{renderedParts}</h1>;
+      }
+      if (headingLevel === 2) {
+        return <h2 key={lineIdx} className="text-xs font-bold uppercase text-sky-400 mt-2.5 mb-1.5">{renderedParts}</h2>;
+      }
+      return <h3 key={lineIdx} className="text-xs font-bold text-slate-200 mt-2 mb-1">{renderedParts}</h3>;
+    }
+
+    if (line.trim().startsWith("• ") || line.trim().startsWith("- ") || line.trim().startsWith("* ")) {
+      const cleanLine = line.replace(/^[\s•\-*]+/, "");
+      return (
+        <li key={lineIdx} className="ml-4 pl-1 list-disc text-slate-300 mt-1 leading-relaxed">
+          {parseMessageContentInline(cleanLine)}
+        </li>
+      );
+    }
+
+    return (
+      <p key={lineIdx} className="min-h-[1.25em] mt-1.5 leading-relaxed text-slate-300 font-sans">
+        {renderedParts}
+      </p>
+    );
+  });
+};
 
 export default function App() {
   // Use "Ji-woo Park" (Silver, score 68%) as the initial target candidate
@@ -56,6 +284,13 @@ export default function App() {
 
   // Enterprise theme state: "light" (default for traditional pitch) vs "dark" (modern sleek)
   const [theme, setTheme] = useState<"light" | "dark">("light");
+
+  // Bilingual Portal state: "en" vs "ko" to showcase globalization readiness
+  const [lang, setLang] = useState<"en" | "ko">("en");
+
+  const t = (key: keyof typeof translations["en"]) => {
+    return translations[lang][key] || translations["en"][key];
+  };
 
   // Selected timeline phase index for interactive exploration (default: 0 or first FAIL index)
   const [selectedTimelineIndex, setSelectedTimelineIndex] = useState<number>(0);
@@ -320,7 +555,7 @@ export default function App() {
   
   const getDynamicAIDirective = () => {
     if (activeFails.length === 0) {
-      return `**AI Training Assistant Feedback // Compliant Status**\n\nExcellent outcome! ${activeCandidate.name} has satisfied all 6 consultation phases. High structural consistency achieved. No compliance risks detected. Recommend direct progression into advanced mentorship modules.`;
+      return `### AI Training Assistant Feedback // Compliant Status\n\nExcellent outcome! Private coaching is complete. ${activeCandidate.name} has satisfied all 6 consultation phases. High structural consistency achieved. No compliance risks detected. Recommend direct progression into advanced global client-facing roles.`;
     }
 
     const failedNames = activeFails.map(f => {
@@ -333,9 +568,9 @@ export default function App() {
       return f.criterion;
     }).join("\n• ");
 
-    return `**Feedback Summary // ${activeCandidate.name}**\nRating: **${dynamicTier} Tier** (${dynamicScore}% score)\n\n**Detected Consultation Gaps:**\n• ${failedNames}\n\n**Tactical Coaching Directive:**\n${
+    return `### Feedback Summary // ${activeCandidate.name}\nRating: ${dynamicTier} Tier (${dynamicScore}% score)\n\n### Detected Gaps:\n• ${failedNames}\n\n### Tactical Coaching Command:\n${
       activeFails.some(f => f.criterion === "Compliance") && activeFails.some(f => f.criterion === "Timeline")
-        ? "Priority training required on stating SEC Rule 206 Risk Declarations and Timeline constraints. Trigger the action buttons below to deploy custom drills."
+        ? "Priority training required on stating SEC Rule 206 Risk Declarations and Timeline constraints. Trigger the action cards below to deploy custom interactive drills."
         : activeFails.some(f => f.criterion === "Compliance")
         ? "Candidate failed Required Rules (Compliance). Guide the student on stating asset variability risk before making index claims."
         : "Build structured empathy cushions to counter advisory fee complaints."
@@ -578,24 +813,24 @@ AI Training Assistant // VOTEST Global`;
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-extrabold text-2xl tracking-tighter uppercase font-display block leading-none">
-                  VOTEST
+                  {t("title")}
                 </span>
                 <span className="text-[10px] bg-sky-600 text-white px-2 py-0.5 rounded-md font-bold font-mono">
                   v2.8-GLOBAL
                 </span>
               </div>
               <span className="text-[11px] font-black text-slate-400 tracking-wider block uppercase leading-tight mt-1">
-                VODA Bi Conversational Intelligence Auditing Panel // 한국어 기반 분석
+                {t("subtitle")}
               </span>
             </div>
           </div>
 
           {/* DYNAMIC CASE PRESET OVERRIDES */}
-          <div className="flex flex-col items-center md:items-end gap-1.5">
+          <div className="flex flex-col items-center md:items-end gap-1.55">
             <span className="text-[10px] font-mono tracking-wider text-slate-400 font-bold uppercase">
-              SELECT REAL-TIME COMPLIANCE REPORT PRESETS:
+              {t("presetLabel")}
             </span>
-            <div className="flex bg-slate-900 p-1 rounded-xl border border-slate-800 gap-1">
+            <div className="flex bg-slate-900 p-1 rounded-xl border border-slate-800 gap-11">
               {PRESET_CANDIDATES.map((cand) => {
                 const isActive = activeCandidateId === cand.id;
                 let btnColor = "text-slate-400 hover:text-white";
@@ -635,42 +870,75 @@ AI Training Assistant // VOTEST Global`;
         }`}>
           <div className="flex items-center gap-2 font-mono font-bold">
             <span className={`w-2.5 h-2.5 rounded-full animate-pulse ${dynamicScore >= 90 ? "bg-emerald-400" : dynamicScore >= 65 ? "bg-amber-400" : "bg-red-400"}`}></span>
-            <span className="uppercase text-slate-400">Status:</span>
-            <span>Candidate Evaluation Scorecard Active</span>
+            <span className="uppercase text-slate-400">{t("statusLabel")}</span>
+            <span>{t("statusActive")}</span>
           </div>
           <div className="flex items-center gap-4 text-[11px]">
-            <span>Active Candidate: <strong className="text-orange-400 font-mono">{activeCandidate.name}</strong></span>
+            <span>{t("activeCandidate")}: <strong className="text-orange-400 font-mono">{activeCandidate.name}</strong></span>
             <span className="opacity-40">|</span>
-            <span>Target Role: <strong className="text-sky-300 font-mono font-bold">Wealth Manager</strong></span>
+            <span>{t("targetRole")}: <strong className="text-sky-300 font-mono font-bold">{lang === "ko" ? "자산 관리사" : "Wealth Manager"}</strong></span>
             
             {/* ADVANCED LIGHT / DARK TOGGLE FOR PITCHING */}
-            <div className="flex items-center gap-1.5 ml-2.5 border-l border-slate-705 pl-4 shrink-0">
-              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest font-mono">PITCH THEME:</span>
+            <div className="flex items-center gap-1.5 ml-2 border-l border-slate-700 pl-3 shrink-0">
+              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest font-mono">{t("pitchTheme")}</span>
               <div className="bg-slate-950/80 border border-slate-800 p-0.5 rounded-lg flex gap-0.5">
                 <button 
                   onClick={() => setTheme("light")}
-                  className={`px-2 py-1 text-[9px] font-black uppercase tracking-tight rounded-md transition-all cursor-pointer ${
+                  className={`px-2 py-0.5 text-[9px] font-black uppercase tracking-tight rounded-md transition-all cursor-pointer ${
                     theme === "light" 
                       ? "bg-white text-slate-950 font-extrabold" 
                       : "text-slate-400 hover:text-slate-200"
                   }`}
                   title="Switch to Corporate Paper-White Light Theme"
                 >
-                  Light
+                  {t("themeLight")}
                 </button>
                 <button 
                   onClick={() => setTheme("dark")}
-                  className={`px-2 py-1 text-[9px] font-black uppercase tracking-tight rounded-md transition-all cursor-pointer ${
+                  className={`px-2 py-0.5 text-[9px] font-black uppercase tracking-tight rounded-md transition-all cursor-pointer ${
                     theme === "dark" 
                       ? "bg-sky-600 text-white font-extrabold" 
                       : "text-slate-400 hover:text-slate-200"
                   }`}
                   title="Switch to Sleek Compliance Midnight Dark Theme"
                 >
-                  Dark
+                  {t("themeDark")}
                 </button>
               </div>
             </div>
+
+            {/* BILINGUAL GLOBAL PORTAL TOGGLE */}
+            <div className="flex items-center gap-1.5 ml-2 border-l border-slate-700 pl-3 shrink-0">
+              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest font-mono flex items-center gap-1">
+                <Globe className="w-3 h-3 text-sky-400" />
+                PORTAL LANG:
+              </span>
+              <div className="bg-slate-950/80 border border-slate-800 p-0.5 rounded-lg flex gap-0.5">
+                <button 
+                  onClick={() => setLang("en")}
+                  className={`px-2 py-0.5 text-[9px] font-black uppercase tracking-tight rounded-md transition-all cursor-pointer ${
+                    lang === "en" 
+                      ? "bg-sky-600 text-white font-extrabold" 
+                      : "text-slate-400 hover:text-slate-200"
+                  }`}
+                  title="Switch portal interface to English"
+                >
+                  EN
+                </button>
+                <button 
+                  onClick={() => setLang("ko")}
+                  className={`px-2 py-0.5 text-[9px] font-black uppercase tracking-tight rounded-md transition-all cursor-pointer ${
+                    lang === "ko" 
+                      ? "bg-sky-600 text-white font-extrabold" 
+                      : "text-slate-400 hover:text-slate-200"
+                  }`}
+                  title="한국어 모드로 인터페이스 전환"
+                >
+                  KO (한국어)
+                </button>
+              </div>
+            </div>
+
           </div>
         </div>
 
@@ -693,7 +961,7 @@ AI Training Assistant // VOTEST Global`;
               <div className="md:col-span-7 flex flex-col justify-center">
                 <div className="flex items-center gap-1.5 mb-1 text-[10px] font-black text-slate-400 tracking-wider uppercase font-mono">
                   <Bookmark className="w-3.5 h-3.5 text-slate-500" />
-                  Active Screening Candidate File // VODA BI VOTEST
+                  {t("activeFileLabel")}
                 </div>
                 
                 <h1 className={`text-3xl md:text-4xl font-extrabold tracking-tight uppercase font-display leading-[1.1] transition-colors ${
@@ -704,29 +972,53 @@ AI Training Assistant // VOTEST Global`;
                 
                 <p className="text-xs font-black text-slate-500 uppercase tracking-widest mt-1.5 flex items-center gap-1.5">
                   <Briefcase className="w-4 h-4 text-slate-400 shrink-0" />
-                  Target Role: {activeCandidate.position}
+                  {t("targetRole")}: {activeCandidate.position === "Junior Wealth Manager" && lang === "ko" ? "주니어 자산 관리사" : activeCandidate.position === "Senior Wealth Advisory Applicant" && lang === "ko" ? "시니어 자산 관리 전문가 지원자" : activeCandidate.position === "Compliance & Advisory Specialist" && lang === "ko" ? "규제 준수 및 전문 심사역" : activeCandidate.position}
                 </p>
 
                 <p className={`text-xs italic mt-2.5 leading-relaxed p-3 rounded-xl border transition-colors ${
-                  theme === "dark" ? "bg-slate-950 text-slate-405 border-slate-850" : "bg-slate-50 text-slate-500 border-slate-200"
+                  theme === "dark" ? "bg-slate-950 text-slate-400 border-slate-850" : "bg-slate-50 text-slate-500 border-slate-200"
                 }`}>
-                  "{activeCandidate.description}"
+                  "{lang === "ko" && activeCandidate.id === "ji_woo_park" ? "실버 등급 지원자 사례. 기본적인 고객 응대와 수수료 설명은 우수하나, 의무화된 SEC 투자 가치 변동 위험(Risk Disclaimer) 공시와 구체적인 일정 협의를 누락했습니다." : lang === "ko" && activeCandidate.id === "john_doe" ? "브론즈 등급 지원자 사례. 매우 거친 상담 태도와 SEC 규제 공시 누락, 속도 조절 실패 및 감정 쿠셔닝 결여등 다수의 취약점이 발생했습니다." : lang === "ko" && activeCandidate.id === "hye_jin_kim" ? "골드 등급 지원자 완벽 이수 사례. 세심한 상담 호흡, 적극적인 경청과 완벽한 동의 수렴, SEC 투자 리스크 안내가 유기적으로 연결된 모범 사례입니다." : activeCandidate.description}"
                 </p>
+
+                {/* Executive Audit Strengths & Areas of core improvement (Korean and English depending on language) */}
+                <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-3.5 border-t border-dashed border-slate-200">
+                  <div className={`p-3 rounded-xl border transition-colors ${
+                    theme === "dark" ? "bg-slate-950/80 text-slate-300 border-slate-800" : "bg-emerald-50/40 text-slate-800 border-emerald-100/80"
+                  }`}>
+                    <span className="text-[10px] font-mono font-black text-emerald-600 block mb-1 uppercase tracking-wider">
+                      ✔ {t("strengthsLabel")}
+                    </span>
+                    <p className="text-xs font-semibold leading-relaxed">
+                      {lang === "ko" && activeCandidate.id === "ji_woo_park" ? "수수료 및 관리 비용 설명 과정에서 탁월한 감정 경청 공감 쿠션(Empathy Cushioning) 및 차분한 설득 스크립트를 시전했습니다." : lang === "ko" && activeCandidate.id === "john_doe" ? "단정적인 설명 구성을 과감하고 신속하게 풀어냈으며 고객이 질문에 신속하게 답변하는 모습을 보여줍니다." : lang === "ko" && activeCandidate.id === "hye_jin_kim" ? "극히 예외적인 경청 태도를 보여주어, 거부 반응에 즉각적으로 우수한 공허감 제거와 리스크 공시를 막힘없이 해냈습니다." : activeCandidate.preparsedResult.executive_summary.strengths}
+                    </p>
+                  </div>
+                  <div className={`p-3 rounded-xl border transition-colors ${
+                    theme === "dark" ? "bg-slate-950/80 text-slate-300 border-slate-800" : "bg-rose-50/40 text-slate-800 border-rose-100/80"
+                  }`}>
+                    <span className="text-[10px] font-mono font-black text-rose-700 block mb-1 uppercase tracking-wider">
+                      ⚠ {t("weaknessesLabel")}
+                    </span>
+                    <p className="text-xs font-semibold leading-relaxed">
+                      {lang === "ko" && activeCandidate.id === "ji_woo_park" ? "의무 규제 사항인 투자 손실 가능성 고지(Mandatory Risk Disclosure)를 누락했으며 자산 이동 계약 시점에 대한 타임라인 수립 단계가 공백으로 발견되었습니다." : lang === "ko" && activeCandidate.id === "john_doe" ? "주요 규제 공시 누락 및 과속 WPM(분당 말하기 속도) 연출, 고객 대답 끊기 및 불손한 억양 제어로 전 부문 규제 리스크 적색 지령을 획득했습니다." : lang === "ko" && activeCandidate.id === "hye_jin_kim" ? "감지된 약점 없음. 규제적, 비즈니스적 모든 평가 항목에서 최상의 기준을 만족하는 우수한 성과를 보였습니다." : activeCandidate.preparsedResult.executive_summary.weaknesses}
+                    </p>
+                  </div>
+                </div>
 
                 <div className="mt-4 flex flex-wrap gap-2">
                   <span className={`px-3 py-1.5 border-2 text-xs font-black uppercase tracking-wider rounded-lg transition-all ${
                     theme === "dark" 
-                      ? "border-slate-800 bg-slate-800 text-slate-205 shadow-[2px_2px_0px_0px_rgba(255,255,255,0.08)]" 
+                      ? "border-slate-800 bg-slate-800 text-slate-202 shadow-[2px_2px_0px_0px_rgba(255,255,255,0.08)]" 
                       : "border-slate-950 shadow-[2px_2px_0px_0px_rgba(2,6,23,1)] " + tierBadgeStyle
                   }`}>
-                    {dynamicTier} Tier
+                    {lang === "ko" ? `${dynamicTier === "Gold" ? "골드" : dynamicTier === "Silver" ? "실버" : "브론즈"} 등급` : `${dynamicTier} Tier`}
                   </span>
                   <span className={`px-3 py-1.5 border-2 text-xs font-black uppercase tracking-wider rounded-lg transition-all ${
                     theme === "dark" 
-                      ? "border-slate-800 bg-slate-800 text-slate-205 shadow-[2px_2px_0px_0px_rgba(255,255,255,0.08)]" 
+                      ? "border-slate-800 bg-slate-800 text-slate-202 shadow-[2px_2px_0px_0px_rgba(255,255,255,0.08)]" 
                       : "border-slate-950 shadow-[2px_2px_0px_0px_rgba(2,6,23,1)] " + recBadgeStyle
                   }`}>
-                    Recommendation: {dynamicRec}
+                    {lang === "ko" ? "채용 추천 의견" : "Recommendation"}: {lang === "ko" ? (dynamicRec === "Direct Hire" ? "즉시 채용" : dynamicRec === "Review" ? "심층 검토" : "채용 보류") : dynamicRec}
                   </span>
                 </div>
               </div>
@@ -738,7 +1030,7 @@ AI Training Assistant // VOTEST Global`;
                   : "bg-slate-50 border-slate-950 rounded-2xl shadow-[4px_4px_0px_0px_rgba(2,6,23,1)] text-slate-950"
               }`}>
                 <span className="text-[9px] font-black uppercase tracking-wider text-slate-400 absolute top-2 pb-1 border-b border-slate-800 w-11/12 text-center">
-                  VOTEST COMPETENCY RATING
+                  {t("competencyRating")}
                 </span>
                 
                 <div className="relative flex items-center justify-center mt-4 mb-2" style={{ width: "110px", height: "110px" }}>
@@ -796,7 +1088,7 @@ AI Training Assistant // VOTEST Global`;
                 }`}
               >
                 <Activity className="w-4 h-4" />
-                VOTEST Analytics Dashboard
+                {t("dashboardTab")}
               </button>
               <button
                 onClick={() => setActiveTab("matrix")}
@@ -811,7 +1103,7 @@ AI Training Assistant // VOTEST Global`;
                 }`}
               >
                 <ListFilter className="w-4 h-4" />
-                BANTCQ Matrix ({passCount}/6 PASS)
+                {t("matrixTab")} ({passCount}/6 PASS)
               </button>
               <button
                 onClick={() => setActiveTab("ingest")}
@@ -820,7 +1112,7 @@ AI Training Assistant // VOTEST Global`;
                 }`}
               >
                 <Sparkles className="w-4 h-4 text-sky-600" />
-                Try Transcript Ingestion
+                {t("sandboxTab")}
               </button>
             </div>
 
@@ -835,7 +1127,7 @@ AI Training Assistant // VOTEST Global`;
                     <h3 className={`text-xl font-bold font-display uppercase tracking-tight mb-4 ${
                       theme === "dark" ? "text-white" : "text-slate-950"
                     }`}>
-                      Communication Metrics
+                      {lang === "ko" ? "커뮤니케이션 분석 지표" : "Communication Metrics"}
                     </h3>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1619,8 +1911,8 @@ AI Training Assistant // VOTEST Global`;
                 <span className="text-[8.5px] font-mono font-black text-orange-400 uppercase tracking-widest block mb-1.5">
                   ⚡ INSTANT FEEDBACK & ROADMAP
                 </span>
-                <div className="text-[11px] leading-relaxed text-slate-350 whitespace-pre-wrap font-sans">
-                  {getDynamicAIDirective()}
+                <div className="text-[11px] leading-relaxed text-slate-350 font-sans">
+                  {parseMessageContent(getDynamicAIDirective())}
                 </div>
               </div>
 
@@ -1646,13 +1938,13 @@ AI Training Assistant // VOTEST Global`;
                       <div
                         className={`p-3.5 rounded-xl leading-relaxed text-[11px] relative max-w-[90%] ${
                           isUser
-                            ? "bg-slate-905 text-sky-305 border border-slate-800 rounded-tr-none font-mono"
+                            ? "bg-slate-900 text-sky-300 border border-slate-800 rounded-tr-none font-mono"
                             : isRoadmapBubble
-                            ? "bg-slate-900/60 text-slate-350 border border-slate-855 rounded-tl-none font-sans font-medium"
+                            ? "bg-slate-900/60 text-slate-350 border border-slate-800 rounded-tl-none font-sans font-medium"
                             : "bg-slate-900 text-slate-200 border border-slate-800 rounded-tl-none font-sans"
                         }`}
                       >
-                        <div className="whitespace-pre-wrap leading-relaxed">{msg.content}</div>
+                        <div className="leading-relaxed">{parseMessageContent(msg.content)}</div>
 
                         {/* Email copy helper */}
                         {msg.content.includes("Subject: Feedback") && (

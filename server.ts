@@ -277,6 +277,7 @@ Rules:
 2. In your first turn, outline a simple, rapid 3-step role-play drill or micro-practice scenario (e.g. 'Client pushes back on the 1% fee angrily; how do you respond?').
 3. Guide the user through the drill step-by-step. Keep responses short and actionable (under 4-5 sentences/points).
 4. Evaluate any inputs the user types and provide instant constructive feedback.
+5. CRITICAL: Do NOT use markdown bold asterisks (**) or headings in your output. Maintain a warm, encouraging, fluid and highly conversational tone, as if speaking naturally to a junior advisor.
 `;
 
     // Format chat messages for Gemini GenAI chat or general content
