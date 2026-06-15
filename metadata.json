@@ -1,0 +1,6 @@
+{
+  "name": "VOTEST Evaluation Engine",
+  "description": "The automated HR screening and capability testing engine for VODA Bi's VOTEST platform, specializing in financial compliance and objection handling analysis.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
