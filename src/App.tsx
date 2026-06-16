@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { PRESET_CANDIDATES } from "./presets";
-import { EvaluationResult, PresetCandidate, BantcqCheck, ComplianceCheck } from "./types";
+import { EvaluationResult, PresetCandidate, BantcqCheck } from "./types";
 import CandidateSelector from "./components/CandidateSelector";
 import { AnimatePresence, motion } from "motion/react";
 import {
@@ -272,9 +272,8 @@ export default function App() {
   const [activeCandidateId, setActiveCandidateId] = useState<string>(initialCandidate.id);
   const activeCandidate = PRESET_CANDIDATES.find(c => c.id === activeCandidateId) || PRESET_CANDIDATES[0];
 
-  // Dynamic state for BANTCQ matrix & Compliance checklist to allow live overrides/toggles
+  // Dynamic state for BANTCQ matrix to allow live overrides/toggles
   const [bantcqState, setBantcqState] = useState<BantcqCheck[]>(activeCandidate.preparsedResult.bantcq_scoring);
-  const [complianceState, setComplianceState] = useState<ComplianceCheck[]>(activeCandidate.preparsedResult.compliance_checklist);
 
   // Modal of Ideal Execution Phrase
   const [executionModalItem, setExecutionModalItem] = useState<BantcqCheck | null>(null);
@@ -449,7 +448,6 @@ export default function App() {
   useEffect(() => {
     const candidateData = PRESET_CANDIDATES.find(c => c.id === activeCandidateId) || PRESET_CANDIDATES[0];
     setBantcqState(candidateData.preparsedResult.bantcq_scoring);
-    setComplianceState(candidateData.preparsedResult.compliance_checklist);
     setDashboardPage(1);
     setMatrixPage(1);
     
@@ -488,6 +486,70 @@ export default function App() {
   useEffect(() => {
     chatBottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [coachingChat]);
+
+  // Focus trap & scroll lock for drawer
+  useEffect(() => {
+    if (!isDrawerOpen) return;
+    const el = drawerRef.current;
+    if (!el) return;
+    const prev = document.activeElement as HTMLElement | null;
+    el.focus();
+    const focusable = (): HTMLElement[] => {
+      const sel = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+      return (Array.from(el.querySelectorAll(sel)) as HTMLElement[]).filter(n => !n.hasAttribute("disabled"));
+    };
+    const trap = (e: KeyboardEvent) => {
+      if (e.key !== "Tab") return;
+      const nodes = focusable();
+      if (!nodes.length) return;
+      const first = nodes[0]; const last = nodes[nodes.length - 1];
+      if (e.shiftKey ? document.activeElement === first : document.activeElement === last) {
+        e.preventDefault();
+        (e.shiftKey ? last : first).focus();
+      }
+    };
+    const close = (e: KeyboardEvent) => { if (e.key === "Escape") setIsDrawerOpen(false); };
+    document.addEventListener("keydown", trap);
+    document.addEventListener("keydown", close);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", trap);
+      document.removeEventListener("keydown", close);
+      document.body.style.overflow = "";
+      prev?.focus();
+    };
+  }, [isDrawerOpen]);
+
+  // Focus trap for modal
+  useEffect(() => {
+    if (!executionModalItem) return;
+    const el = modalRef.current;
+    if (!el) return;
+    const prev = document.activeElement as HTMLElement | null;
+    el.focus();
+    const focusable = (): HTMLElement[] => {
+      const sel = 'button, [href], input, [tabindex]:not([tabindex="-1"])';
+      return (Array.from(el.querySelectorAll(sel)) as HTMLElement[]).filter(n => !n.hasAttribute("disabled"));
+    };
+    const trap = (e: KeyboardEvent) => {
+      if (e.key !== "Tab") return;
+      const nodes = focusable();
+      if (!nodes.length) return;
+      const first = nodes[0]; const last = nodes[nodes.length - 1];
+      if (e.shiftKey ? document.activeElement === first : document.activeElement === last) {
+        e.preventDefault();
+        (e.shiftKey ? last : first).focus();
+      }
+    };
+    const close = (e: KeyboardEvent) => { if (e.key === "Escape") setExecutionModalItem(null); };
+    document.addEventListener("keydown", trap);
+    document.addEventListener("keydown", close);
+    return () => {
+      document.removeEventListener("keydown", trap);
+      document.removeEventListener("keydown", close);
+      prev?.focus();
+    };
+  }, [executionModalItem]);
 
   // Recalculate score and ratings dynamically based on active BANTCQ PASS/FAIL toggles
   const passCount = bantcqState.filter(b => b.status === "PASS").length;
@@ -533,20 +595,6 @@ export default function App() {
         return { ...b, status: nextStatus, score: nextScore };
       }
       return b;
-    }));
-
-    // Synchronize the status of corresponding checkpoints in the visual complianceState
-    setComplianceState(prev => prev.map(comp => {
-      if (criterion === "Compliance" && comp.checkpoint.includes("Risk")) {
-        return { ...comp, status: comp.status === "PASS" ? "FAIL" : "PASS" };
-      }
-      if (criterion === "Compliance" && comp.checkpoint.includes("Guarantees")) {
-        return { ...comp, status: comp.status === "PASS" ? "FAIL" : "PASS" };
-      }
-      if (criterion === "Budget" && comp.checkpoint.includes("Cushioning")) {
-        return { ...comp, status: comp.status === "PASS" ? "FAIL" : "PASS" };
-      }
-      return comp;
     }));
   };
 
@@ -598,7 +646,6 @@ export default function App() {
 
       // Inject custom candidate results directly to scorecard states!
       setBantcqState(customPreset.bantcq_scoring);
-      setComplianceState(customPreset.compliance_checklist);
       setActiveTab("dashboard");
       
       const activeFails = customPreset.bantcq_scoring.filter(b => b.status === "FAIL");
@@ -826,11 +873,11 @@ AI Training Assistant // VOTEST Global`;
           </div>
 
           {/* DYNAMIC CASE PRESET OVERRIDES */}
-          <div className="flex flex-col items-center md:items-end gap-1.55">
+          <div className="flex flex-col items-center md:items-end gap-1.5">
             <span className="text-[10px] font-mono tracking-wider text-slate-400 font-bold uppercase">
               {t("presetLabel")}
             </span>
-            <div className="flex bg-slate-900 p-1 rounded-xl border border-slate-800 gap-11">
+            <div className="flex bg-slate-900 p-1 rounded-xl border border-slate-800 gap-1">
               {PRESET_CANDIDATES.map((cand) => {
                 const isActive = activeCandidateId === cand.id;
                 let btnColor = "text-slate-400 hover:text-white";
@@ -847,11 +894,8 @@ AI Training Assistant // VOTEST Global`;
                 return (
                   <button
                     key={cand.id}
-                    onClick={() => {
-                      setActiveCandidateId(cand.id);
-                      setBantcqState(cand.preparsedResult.bantcq_scoring);
-                      setComplianceState(cand.preparsedResult.compliance_checklist);
-                    }}
+                    onClick={() => setActiveCandidateId(cand.id)}
+                    aria-pressed={activeCandidateId === cand.id}
                     className={`px-3 py-1.5 rounded-lg text-xs tracking-tight transition-all cursor-pointer whitespace-nowrap ${btnColor}`}
                   >
                     {cand.preparsedResult.overall_metrics.tier} ({cand.preparsedResult.overall_metrics.score}%)
@@ -869,7 +913,7 @@ AI Training Assistant // VOTEST Global`;
             : "bg-slate-900 text-slate-200 border-slate-950"
         }`}>
           <div className="flex items-center gap-2 font-mono font-bold">
-            <span className={`w-2.5 h-2.5 rounded-full animate-pulse ${dynamicScore >= 90 ? "bg-emerald-400" : dynamicScore >= 65 ? "bg-amber-400" : "bg-red-400"}`}></span>
+            <span className={`w-2.5 h-2.5 rounded-full motion-safe:animate-pulse ${dynamicScore >= 90 ? "bg-emerald-400" : dynamicScore >= 65 ? "bg-amber-400" : "bg-red-400"}`}></span>
             <span className="uppercase text-slate-400">{t("statusLabel")}</span>
             <span>{t("statusActive")}</span>
           </div>
@@ -880,7 +924,7 @@ AI Training Assistant // VOTEST Global`;
             
             {/* ADVANCED LIGHT / DARK TOGGLE FOR PITCHING */}
             <div className="flex items-center gap-1.5 ml-2 border-l border-slate-700 pl-3 shrink-0">
-              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest font-mono">{t("pitchTheme")}</span>
+              <span className="text-[11px] font-black text-slate-300 uppercase tracking-widest font-mono">{t("pitchTheme")}</span>
               <div className="bg-slate-950/80 border border-slate-800 p-0.5 rounded-lg flex gap-0.5">
                 <button 
                   onClick={() => setTheme("light")}
@@ -909,7 +953,7 @@ AI Training Assistant // VOTEST Global`;
 
             {/* BILINGUAL GLOBAL PORTAL TOGGLE */}
             <div className="flex items-center gap-1.5 ml-2 border-l border-slate-700 pl-3 shrink-0">
-              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest font-mono flex items-center gap-1">
+              <span className="text-[11px] font-black text-slate-300 uppercase tracking-widest font-mono flex items-center gap-1">
                 <Globe className="w-3 h-3 text-sky-400" />
                 PORTAL LANG:
               </span>
@@ -1029,13 +1073,13 @@ AI Training Assistant // VOTEST Global`;
                   ? "bg-slate-950 border-slate-850 shadow-[4px_4px_0px_0px_rgba(255,255,255,0.05)] text-white" 
                   : "bg-slate-50 border-slate-950 rounded-2xl shadow-[4px_4px_0px_0px_rgba(2,6,23,1)] text-slate-950"
               }`}>
-                <span className="text-[9px] font-black uppercase tracking-wider text-slate-400 absolute top-2 pb-1 border-b border-slate-800 w-11/12 text-center">
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 absolute top-2 pb-1 border-b border-slate-800 w-11/12 text-center">
                   {t("competencyRating")}
                 </span>
                 
                 <div className="relative flex items-center justify-center mt-4 mb-2" style={{ width: "110px", height: "110px" }}>
                   {/* Circular SVG Tracker */}
-                  <svg className="w-full h-full transform -rotate-90">
+                  <svg className="w-full h-full transform -rotate-90" role="img" aria-label={`Competency score: ${dynamicScore}%`}>
                     <circle
                       cx="55"
                       cy="55"
@@ -1060,11 +1104,11 @@ AI Training Assistant // VOTEST Global`;
                     <span className={`text-3xl font-black tracking-tight font-display ${theme === "dark" ? "text-white" : "text-slate-950"}`}>
                       {dynamicScore}%
                     </span>
-                    <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider border-t border-slate-800 pt-0.5 mt-0.5">Rating</span>
+                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider border-t border-slate-800 pt-0.5 mt-0.5">Rating</span>
                   </div>
                 </div>
 
-                <div className="text-[9px] font-mono text-slate-500 uppercase tracking-widest text-center font-bold">
+                <div className="text-[10px] font-mono text-slate-500 uppercase tracking-widest text-center font-bold">
                   {dynamicScore >= 90 ? "COMPLIANT // SATISFACTORY" : dynamicScore >= 65 ? "QUALIFIED // PENDING DEEP DISCOVERY" : "CRITICAL RISK // FAIL STATUS"}
                 </div>
               </div>
@@ -1145,7 +1189,7 @@ AI Training Assistant // VOTEST Global`;
                               
                               {/* TOOLTIP: Hide explanatory micro-copy under a [ ? ] standard hover icon */}
                               <div className="group relative inline-block cursor-help shrink-0 text-slate-400 hover:text-white z-20">
-                                <span className="w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center font-mono text-[9px] font-black leading-none select-none">?</span>
+                                <span className="w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center font-mono text-[10px] font-black leading-none select-none">?</span>
                                 <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-slate-900 border border-slate-800 text-white text-[10px] rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none leading-normal font-sans normal-case tracking-normal">
                                   Monitors agent speaking control vs client active listening. Recommended target ratio is between 40%-60%.
                                 </div>
@@ -1186,7 +1230,7 @@ AI Training Assistant // VOTEST Global`;
                               
                               {/* TOOLTIP: Hide explanatory micro-copy under a [ ? ] standard hover icon */}
                               <div className="group relative inline-block cursor-help shrink-0 text-slate-400 hover:text-white z-20">
-                                <span className="w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center font-mono text-[9px] font-black leading-none select-none">?</span>
+                                <span className="w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center font-mono text-[10px] font-black leading-none select-none">?</span>
                                 <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-slate-900 border border-slate-800 text-white text-[10px] rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none leading-normal font-sans normal-case tracking-normal">
                                   Audits conversational words per minute tempo to assure clients understand disclosure metrics. Recommended: 110-145 WPM.
                                 </div>
@@ -1229,7 +1273,7 @@ AI Training Assistant // VOTEST Global`;
                             
                             {/* TOOLTIP: Hide explanatory micro-copy under a [ ? ] standard hover icon */}
                             <div className="group relative inline-block cursor-help shrink-0 text-slate-400 hover:text-white z-20">
-                              <span className="w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center font-mono text-[9px] font-black leading-none select-none">?</span>
+                              <span className="w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center font-mono text-[10px] font-black leading-none select-none">?</span>
                               <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-slate-900 border border-slate-800 text-white text-[10px] rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none leading-normal font-sans normal-case tracking-normal">
                                 Monitors speech overlap instances, user interruptions, and awkward silence or response gaps.
                               </div>
@@ -1257,7 +1301,7 @@ AI Training Assistant // VOTEST Global`;
                               "{activeCandidate.preparsedResult.linguistic_metrics.overlapping_speech.details}"
                             </p>
                             {activeCandidateId === "john_doe" && (
-                              <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-red-400 animate-pulse" />
+                              <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-red-400 motion-safe:animate-pulse" />
                             )}
                           </div>
 
@@ -1301,7 +1345,7 @@ AI Training Assistant // VOTEST Global`;
                         
                         {/* TOOLTIP: Hide explanatory micro-copy under a [ ? ] standard hover icon */}
                         <div className="group relative inline-block cursor-help text-slate-400 hover:text-slate-600 z-20">
-                          <span className="w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center font-mono text-[9px] font-black leading-none select-none">?</span>
+                          <span className="w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center font-mono text-[10px] font-black leading-none select-none">?</span>
                           <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 p-2 bg-slate-900 border border-slate-800 text-white text-[10px] rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none leading-normal font-sans normal-case tracking-normal">
                             Real-time linkage between Korea's core conversational benchmarks (BANTCQ 요인 분석) and the visual sequential timeline of the wealth advisory track.
                           </div>
@@ -1377,7 +1421,7 @@ AI Training Assistant // VOTEST Global`;
                                         <span className={`px-2 py-0.5 text-xs font-extrabold uppercase tracking-widest rounded-md border ${
                                           chk.status === "PASS"
                                             ? "bg-emerald-50 text-emerald-800 border-emerald-300"
-                                            : "bg-red-50 text-red-800 border-red-300 animate-pulse"
+                                            : "bg-red-50 text-red-800 border-red-300 motion-safe:animate-pulse"
                                         }`}>
                                           {chk.status}
                                         </span>
@@ -1392,6 +1436,7 @@ AI Training Assistant // VOTEST Global`;
                                               : "bg-white hover:bg-slate-100 border-slate-300 text-slate-700"
                                           }`}
                                           title="Click to toggle pass/fail simulation"
+                                          aria-label={`Toggle ${chk.criterion} status (currently ${chk.status})`}
                                         >
                                           Flip
                                         </button>
@@ -1444,13 +1489,13 @@ AI Training Assistant // VOTEST Global`;
                         <div>
                           <div className="flex items-center justify-between mb-2 pb-2 border-b border-dashed border-slate-205">
                             <div className="flex items-center gap-1.5">
-                              <span className="text-[9.5px] font-black uppercase tracking-wider text-slate-400 font-mono">
+                              <span className="text-[11px] font-black uppercase tracking-wider text-slate-500 font-mono">
                                 Conversation Timeline
                               </span>
                               
                               {/* TOOLTIP: Hide explanatory micro-copy under a [ ? ] standard hover icon */}
                               <div className="group relative inline-block cursor-help text-slate-400 hover:text-slate-600 z-20">
-                                <span className="w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center font-mono text-[9px] font-black leading-none select-none">?</span>
+                                <span className="w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center font-mono text-[10px] font-black leading-none select-none">?</span>
                                 <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-slate-900 border border-slate-800 text-white text-[10px] rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none leading-normal font-sans normal-case tracking-normal">
                                   Sequential phases of the wealth consultation. Click any node sequence dot to synchronize the transcripts and audit notes.
                                 </div>
@@ -1478,7 +1523,7 @@ AI Training Assistant // VOTEST Global`;
                                 
                                 let circleColor = "bg-emerald-500 ring-emerald-100 ring-4";
                                 if (isFail) {
-                                  circleColor = "bg-rose-500 ring-rose-100 ring-4 animate-pulse";
+                                  circleColor = "bg-rose-500 ring-rose-100 ring-4 motion-safe:animate-pulse";
                                 } else if (event.id === "opening") {
                                   circleColor = "bg-sky-500 ring-sky-100 ring-4";
                                 }
@@ -1490,7 +1535,7 @@ AI Training Assistant // VOTEST Global`;
                                     className="flex flex-col items-center focus:outline-none group relative cursor-pointer"
                                     style={{ width: "13%" }}
                                   >
-                                    <span className="text-[8.5px] font-mono font-bold text-slate-400 mb-2 whitespace-nowrap">
+                                    <span className="text-[10px] font-mono font-bold text-slate-400 mb-2 whitespace-nowrap">
                                       {event.timestamp.split(" ")[0]}
                                     </span>
 
@@ -1499,12 +1544,12 @@ AI Training Assistant // VOTEST Global`;
                                         ? "scale-125 ring-4 ring-orange-400 bg-orange-500 font-black z-10" 
                                         : "hover:scale-110 z-0"
                                     } ${circleColor}`}>
-                                      <span className="text-[8.5px] text-white font-mono font-bold">
+                                      <span className="text-[10px] text-white font-mono font-bold">
                                         {idx + 1}
                                       </span>
                                     </div>
 
-                                    <span className={`text-[8.5px] mt-2 font-black uppercase tracking-tight leading-none text-center block max-w-[42px] truncate ${
+                                    <span className={`text-[10px] mt-2 font-black uppercase tracking-tight leading-none text-center block max-w-[42px] truncate ${
                                       isSelected 
                                         ? "text-sky-500 font-extrabold mt-2.5 scale-105" 
                                         : "text-slate-400 group-hover:text-slate-600"
@@ -1519,13 +1564,13 @@ AI Training Assistant // VOTEST Global`;
 
                           <div className="mt-4 p-2.5 bg-slate-950/40 border border-slate-800 rounded-xl flex items-center justify-between text-[10.5px] font-mono text-slate-300">
                             <div className="flex items-center gap-1.5 truncate">
-                              <span className="w-2 h-2 rounded-full bg-sky-500 animate-pulse"></span>
-                              <span className="text-slate-400 uppercase font-black text-[9px] shrink-0">TRACKING CO-ORDINATE:</span>
+                              <span className="w-2 h-2 rounded-full bg-sky-500 motion-safe:animate-pulse"></span>
+                              <span className="text-slate-300 uppercase font-black text-[11px] shrink-0">TRACKING CO-ORDINATE:</span>
                               <span className="text-white font-extrabold truncate">
                                 {callFlowEvents[selectedTimelineIndex].phase_name} ({callFlowEvents[selectedTimelineIndex].korean_name})
                               </span>
                             </div>
-                            <span className="text-sky-300 font-black text-[9.5px] shrink-0 ml-1.5 font-mono">
+                            <span className="text-sky-300 font-black text-[11px] shrink-0 ml-1.5 font-mono">
                               {callFlowEvents[selectedTimelineIndex].timestamp}
                             </span>
                           </div>
@@ -1548,18 +1593,18 @@ AI Training Assistant // VOTEST Global`;
                       <div>
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
-                            <span className="text-[9.5px] bg-slate-950 text-white font-mono font-bold px-2 py-0.5 rounded border border-slate-800">
+                            <span className="text-[11px] bg-slate-950 text-white font-mono font-bold px-2 py-0.5 rounded border border-slate-800">
                               Segment {selectedTimelineIndex + 1}
                             </span>
-                            <span className={`px-2 py-0.5 text-[8.5px] font-black uppercase tracking-wider rounded border ${
+                            <span className={`px-2 py-0.5 text-[10px] font-black uppercase tracking-wider rounded border ${
                               callFlowEvents[selectedTimelineIndex].status === "PASS"
                                 ? "bg-emerald-50 text-emerald-800 border-emerald-300"
-                                : "bg-red-50 text-red-800 border-red-300 animate-pulse"
+                                : "bg-red-50 text-red-800 border-red-300 motion-safe:animate-pulse"
                             }`}>
                               {callFlowEvents[selectedTimelineIndex].status}
                             </span>
                           </div>
-                          <span className="text-[9.5px] font-mono text-slate-400 uppercase font-bold">
+                          <span className="text-[11px] font-mono text-slate-400 uppercase font-bold">
                             COMPLIANCE ASSESSMENT
                           </span>
                         </div>
@@ -1573,14 +1618,14 @@ AI Training Assistant // VOTEST Global`;
                           {/* Simulated Dialogue Box */}
                           <div className="p-4 bg-slate-950 text-amber-105 rounded-xl border-l-4 border-amber-400 font-mono text-[11.5px] leading-relaxed flex flex-col justify-between shadow-sm">
                             <div>
-                              <span className="text-[9px] font-mono font-black uppercase tracking-wider text-amber-400 block mb-3 border-b border-amber-900/50 pb-1.5">
+                              <span className="text-[11px] font-mono font-black uppercase tracking-wider text-amber-400 block mb-3 border-b border-amber-900/50 pb-1.5">
                                 🎙️ Transcript:
                               </span>
                               <p className="whitespace-pre-wrap leading-relaxed italic select-all select-none">
                                 {callFlowEvents[selectedTimelineIndex].dialogue}
                               </p>
                             </div>
-                            <div className="mt-4 pt-2 border-t border-amber-950/40 text-[9.5px] text-slate-500 text-right font-mono font-medium">
+                            <div className="mt-4 pt-2 border-t border-amber-950/40 text-[11px] text-slate-400 text-right font-mono font-medium">
                               Timestamp: {callFlowEvents[selectedTimelineIndex].timestamp}
                             </div>
                           </div>
@@ -1590,7 +1635,7 @@ AI Training Assistant // VOTEST Global`;
                             theme === "dark" ? "bg-slate-900 border-slate-800" : "bg-slate-50 border-slate-200"
                           }`}>
                             <div>
-                              <span className="text-[9.5px] font-black font-mono text-slate-400 uppercase block mb-1">
+                              <span className="text-[11px] font-black font-mono text-slate-400 uppercase block mb-1">
                                 Feedback Notes:
                               </span>
                               <p className={`text-xs leading-relaxed font-semibold mb-4 ${
@@ -1599,7 +1644,7 @@ AI Training Assistant // VOTEST Global`;
                                 {callFlowEvents[selectedTimelineIndex].critique}
                               </p>
 
-                              <span className="text-[9.5px] font-black font-mono text-slate-400 uppercase block mb-1">
+                              <span className="text-[11px] font-black font-mono text-slate-400 uppercase block mb-1">
                                 Ideal Response (권장 가이드 발언):
                               </span>
                               <div className="bg-emerald-50/90 border border-emerald-300 text-emerald-950 p-3 rounded-lg text-[11px] font-mono font-bold leading-normal italic">
@@ -1758,7 +1803,7 @@ AI Training Assistant // VOTEST Global`;
                                     <span className="block">
                                       <button
                                         onClick={() => setExecutionModalItem(item)}
-                                        className="px-3 py-1.5 bg-rose-50 border-2 border-rose-950 text-rose-950 hover:bg-rose-100 text-xs font-black uppercase rounded-lg shadow-xs cursor-pointer transition-colors inline-flex items-center gap-1.5 animate-pulse"
+                                        className="px-3 py-1.5 bg-rose-50 border-2 border-rose-950 text-rose-950 hover:bg-rose-100 text-xs font-black uppercase rounded-lg shadow-xs cursor-pointer transition-colors inline-flex items-center gap-1.5 motion-safe:animate-pulse"
                                       >
                                         <Info className="w-3.5 h-3.5 text-rose-700" />
                                         [See Ideal Execution]
@@ -1831,8 +1876,6 @@ AI Training Assistant // VOTEST Global`;
                     onSelectCandidate={(cand, trans) => {
                       if (cand) {
                         setActiveCandidateId(cand.id);
-                        setBantcqState(cand.preparsedResult.bantcq_scoring);
-                        setComplianceState(cand.preparsedResult.compliance_checklist);
                         setActiveTab("dashboard");
                       }
                     }}
@@ -1865,7 +1908,12 @@ AI Training Assistant // VOTEST Global`;
           {/* Slide-out AI Assistant Drawer Panel */}
           <div
             id="copilot-drawer"
-            className={`fixed inset-y-0 right-0 z-50 w-full sm:w-[480px] bg-slate-950 text-white shadow-2xl flex flex-col justify-between transform transition-transform duration-300 ease-in-out border-l-4 border-slate-900 ${
+            ref={drawerRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="AI Training Assistant"
+            tabIndex={-1}
+            className={`fixed inset-y-0 right-0 z-50 w-full sm:w-[480px] bg-slate-950 text-white shadow-2xl flex flex-col justify-between transform transition-transform duration-300 ease-in-out border-l-4 border-slate-900 focus:outline-none ${
               isDrawerOpen ? "translate-x-0" : "translate-x-full"
             }`}
           >
@@ -1879,7 +1927,7 @@ AI Training Assistant // VOTEST Global`;
                   <h3 className="text-sm font-extrabold tracking-tight uppercase font-display leading-tight text-white">
                     AI Training Assistant
                   </h3>
-                  <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider leading-none mt-0.5">
+                  <p className="text-[11px] text-slate-400 font-bold uppercase tracking-wider leading-none mt-0.5">
                     Integrated SEC Practice Assistant
                   </p>
                 </div>
@@ -1894,6 +1942,7 @@ AI Training Assistant // VOTEST Global`;
                   onClick={() => setIsDrawerOpen(false)}
                   className="p-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
                   title="Close AI Assistant Panel"
+                  aria-label="Close AI Assistant"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -1905,10 +1954,10 @@ AI Training Assistant // VOTEST Global`;
               
               {/* Top Section (Automated Insight - subtly shaded card containing the 'Coaching Roadmap') */}
               <div className="bg-slate-900 border-2 border-orange-500/25 rounded-xl p-4 shadow-[0_4px_12px_rgba(249,115,22,0.06)] relative overflow-hidden shrink-0">
-                <div className="absolute top-0 right-0 p-1 px-2.5 bg-orange-500/15 border-l border-b border-orange-500/30 text-orange-400 font-mono text-[8px] font-black uppercase rounded-bl-lg">
+                <div className="absolute top-0 right-0 p-1 px-2.5 bg-orange-500/15 border-l border-b border-orange-500/30 text-orange-400 font-mono text-[10px] font-black uppercase rounded-bl-lg">
                   INSIGHT
                 </div>
-                <span className="text-[8.5px] font-mono font-black text-orange-400 uppercase tracking-widest block mb-1.5">
+                <span className="text-[11px] font-mono font-black text-orange-400 uppercase tracking-widest block mb-1.5">
                   ⚡ INSTANT FEEDBACK & ROADMAP
                 </span>
                 <div className="text-[11px] leading-relaxed text-slate-350 font-sans">
@@ -1916,7 +1965,7 @@ AI Training Assistant // VOTEST Global`;
                 </div>
               </div>
 
-              <div className="text-[9px] font-mono font-black text-slate-500 uppercase tracking-widest block pb-1 border-b border-slate-800">
+              <div className="text-[11px] font-mono font-black text-slate-400 uppercase tracking-widest block pb-1 border-b border-slate-800">
                 AI ASSISTANT INTERACTIVE WORKPLACE
               </div>
 
@@ -1931,7 +1980,7 @@ AI Training Assistant // VOTEST Global`;
                       key={index}
                       className={`flex flex-col ${isUser ? "items-end" : "items-start"}`}
                     >
-                      <span className="text-[8.5px] font-mono font-bold text-slate-500 uppercase tracking-wider mb-0.5">
+                      <span className="text-[11px] font-mono font-bold text-slate-400 uppercase tracking-wider mb-0.5">
                         {isUser ? "USER EXECUTION" : "AI ASSISTANT"}
                       </span>
                       
@@ -1979,7 +2028,7 @@ AI Training Assistant // VOTEST Global`;
               
               {/* Quick Action Pill Tags Container neatly positioned just above text input */}
               <div>
-                <span className="text-[8.5px] font-mono font-extrabold text-slate-500 uppercase tracking-widest block mb-1.5">
+                <span className="text-[11px] font-mono font-extrabold text-slate-400 uppercase tracking-widest block mb-1.5">
                   ⚡ AI Assistant Quick Action Pill Tags
                 </span>
                 
@@ -2040,10 +2089,12 @@ AI Training Assistant // VOTEST Global`;
           <button
             id="ask-copilot-fab"
             onClick={() => setIsDrawerOpen(true)}
+            aria-label="Open AI Training Assistant"
+            aria-expanded={isDrawerOpen}
             className="fixed bottom-6 right-6 z-30 bg-sky-600 hover:bg-sky-500 text-white font-extrabold px-5 py-3.5 rounded-full shadow-[0_4px_25px_rgba(2,132,199,0.4)] border-2 border-white hover:scale-105 active:scale-95 transition-all flex items-center gap-2 cursor-pointer group"
             title="Open AI Assistant Console"
           >
-            <Sparkles className="w-4.5 h-4.5 text-white animate-pulse" />
+            <Sparkles className="w-4.5 h-4.5 text-white motion-safe:motion-safe:animate-pulse" />
             <span className="text-xs font-display tracking-widest uppercase">Ask AI Assistant</span>
           </button>
 
@@ -2086,6 +2137,7 @@ AI Training Assistant // VOTEST Global`;
                   </div>
                   <button
                     onClick={() => setExecutionModalItem(null)}
+                    aria-label="Close ideal phrasing guide"
                     className="p-1 hover:bg-slate-100 rounded-lg border border-slate-200 text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
                   >
                     <X className="w-5 h-5" />
@@ -2128,13 +2180,17 @@ AI Training Assistant // VOTEST Global`;
         </AnimatePresence>
 
         {/* SYSTEM AUDIT COMPANION FOOTER */}
-        <footer className="bg-white border-t-4 border-slate-950 px-6 py-4 flex flex-col md:flex-row items-center justify-between text-[11px] text-slate-500 gap-3 shrink-0">
+        <footer className={`border-t-4 px-6 py-4 flex flex-col md:flex-row items-center justify-between text-[11px] gap-3 shrink-0 transition-colors duration-300 ${
+          theme === "dark"
+            ? "bg-slate-950 border-slate-800 text-slate-400"
+            : "bg-white border-slate-950 text-slate-500"
+        }`}>
           <div className="flex flex-wrap items-center gap-3 justify-center md:justify-start">
-            <span className="font-extrabold text-slate-900 font-display">VOTEST CONVERSATIONAL SYSTEMS</span>
+            <span className={`font-extrabold font-display ${theme === "dark" ? "text-slate-200" : "text-slate-900"}`}>VOTEST CONVERSATIONAL SYSTEMS</span>
             <span className="opacity-50">•</span>
             <span>VODA Bi English-Korean Translated Architecture</span>
             <span className="opacity-50">•</span>
-            <span className="hover:text-slate-950 text-sky-600 font-mono">
+            <span className={`font-mono ${theme === "dark" ? "text-sky-400" : "text-sky-600 hover:text-slate-950"}`}>
               7194-XQ // SEC RULINGS COMPLETE
             </span>
           </div>
