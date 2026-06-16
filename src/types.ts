@@ -23,7 +23,7 @@ export interface TierUpgradeAdvisor {
 }
 
 export interface BantcqCheck {
-  criterion: "Budget" | "Authority" | "Needs" | "Timeline" | "Compliance" | "Question";
+  criterion: "Budget" | "Authority" | "Need" | "Timeline" | "Competitors" | "Questions";
   status: "PASS" | "FAIL";
   score: number; // 0 to 10 score for this metric
   evidence: string; // Specific excerpt or observation from transcript

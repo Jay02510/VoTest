@@ -2094,7 +2094,7 @@ AI Training Assistant // VOTEST Global`;
             className="fixed bottom-6 right-6 z-30 bg-sky-600 hover:bg-sky-500 text-white font-extrabold px-5 py-3.5 rounded-full shadow-[0_4px_25px_rgba(2,132,199,0.4)] border-2 border-white hover:scale-105 active:scale-95 transition-all flex items-center gap-2 cursor-pointer group"
             title="Open AI Assistant Console"
           >
-            <Sparkles className="w-4.5 h-4.5 text-white motion-safe:motion-safe:animate-pulse" />
+            <Sparkles className="w-4.5 h-4.5 text-white motion-safe:animate-pulse" />
             <span className="text-xs font-display tracking-widest uppercase">Ask AI Assistant</span>
           </button>
 

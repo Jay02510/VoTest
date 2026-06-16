@@ -42,18 +42,18 @@ app.post("/api/evaluate", async (req, res) => {
 
   try {
     const prompt = `
-You are the advanced English/Multilingual Evaluation Engine for VODA Bi's VOTEST platform, specializing in automated HR screening, compliance checking, and capability testing for the financial advisory sector.
+You are the advanced English/Multilingual Evaluation Engine for VODA Bi's VOTEST platform, specializing in automated sales roleplay evaluation, compliance checking, and capability testing.
 
-You are given a transcript of a conversation between a Wealth Manager/Advisory Applicant and a Client. 
+You are given a transcript of a conversation between a Candidate/Salesperson and a Client. 
 
 Evaluate the transcript closely based on these critical criteria:
 1. THE PROPRIETARY BANTCQ FRAMEWORK:
-   - Budget: Did the applicant discuss the investable funds/savings amount (confirming clients with $50,000 or $500,000 backgrounds) and the 1% annual fee?
-   - Authority: Did they confirm the client has sole signature/discretionary authority over the funds?
-   - Needs: Did they validate and cushion the client's anxiety about market volatility, or ignore their worries?
-   - Timeline: Did they establish when the client wants to invest or transition custody?
-   - Compliance: Did they explicitly state that investments carry risk of loss and avoid guaranteeing outputs?
-   - Question: Did the applicant use open-ended questions to guide the client rather than declarative pitches?
+   - Budget: Did the applicant discuss the budget availability, account/portfolio size, or fees?
+   - Authority: Did they confirm decision-making power or verify the principal decision owner?
+   - Need: Did they discover the client's pain points, anxieties, or business weaknesses?
+   - Timeline: Did they establish an implementation schedule or target deployment horizon?
+   - Competitors: Did they check for current solutions, alternative approaches, or competitive evaluation?
+   - Questions: Did they ask open-ended questions, handle customer inquiries, and display active listening?
 
 2. LINGUISTIC METRICS:
    - Calculate the Talk/Listen ratio (Speech Share) in "Talk:Listen" percentage format.
@@ -147,13 +147,13 @@ Ensure your response is valid JSON strictly compliant with the required schema. 
             },
             bantcq_scoring: {
               type: Type.ARRAY,
-              description: "Assess all 6 dimensions of the proprietary BANTCQ Framework: Budget, Authority, Needs, Timeline, Compliance, Question.",
+              description: "Assess all 6 dimensions of the proprietary BANTCQ Framework: Budget, Authority, Need, Timeline, Competitors, Questions.",
               items: {
                 type: Type.OBJECT,
                 properties: {
                   criterion: {
                     type: Type.STRING,
-                    description: "Must be exactly one of: 'Budget', 'Authority', 'Needs', 'Timeline', 'Compliance', or 'Question'.",
+                    description: "Must be exactly one of: 'Budget', 'Authority', 'Need', 'Timeline', 'Competitors', or 'Questions'.",
                   },
                   status: {
                     type: Type.STRING,
@@ -295,7 +295,13 @@ Rules:
       },
     });
 
-    return res.json({ response: response.text });
+    let cleanedText = response.text || "";
+    // Post-process response to strictly eliminate all AI-clutter and bad Markdown:
+    cleanedText = cleanedText.replace(/\*\*/g, ""); // strip all asterisks
+    cleanedText = cleanedText.replace(/^###?\s+/gm, ""); // strip header titles
+    cleanedText = cleanedText.replace(/^\s*[\-\*]\s+/gm, "• "); // convert dash-bullets to standard dot bulletins
+
+    return res.json({ response: cleanedText });
   } catch (error: any) {
     console.error("Coaching API Error:", error);
     return res.status(500).json({

@@ -68,7 +68,7 @@ Ji-woo: We can get started as soon as next week. I will set up the asset account
           ideal_example: "To set assets up correctly, will this portfolio be registered in your sole name or a co-owned trust?"
         },
         {
-          criterion: "Needs",
+          criterion: "Need",
           status: "PASS",
           score: 8,
           evidence: "Discussing the client's desire for balanced market growth and protection of capital.",
@@ -84,15 +84,15 @@ Ji-woo: We can get started as soon as next week. I will set up the asset account
           ideal_example: "What is your target investment horizon for this $350,000 capital, and when do you anticipate needing payouts?"
         },
         {
-          criterion: "Compliance",
+          criterion: "Competitors",
           status: "FAIL",
           score: 2,
-          evidence: "'We are going to target high-performing equity funds to maximize your returns.'",
-          critique: "FAILED REGULATORY ACCORD: Severe compliance violation by failing to mention market risks and agreeing with 'safe profits' remarks.",
-          ideal_example: "By law, I must remind you that all market allocations run risks, and past results do not assure future yields."
+          evidence: "Omitted checking whether the client is looking at any competing products.",
+          critique: "FAILED COMPETITOR AUDIT: Severe competitive discovery gap. Ji-woo failed to ask if the client is exploring custom solutions with competitors, resulting in a defensive gap.",
+          ideal_example: "Are you comparing our pricing and services with any other wealth management firms or digital investment platforms?"
         },
         {
-          criterion: "Question",
+          criterion: "Questions",
           status: "PASS",
           score: 8,
           evidence: "'What kind of fees do you charge? ... Yes, we charge a standard 1%...'",
@@ -114,8 +114,8 @@ Ji-woo: We can get started as soon as next week. I will set up the asset account
         pacing_feedback: "Optimal speed of 135 words per minute (말하기 속도: 보통). Smooth cadence, maintaining professional control without rushing."
       },
       tier_upgrade_advisor: {
-        primary_bottleneck: "Timeline Discovery & Regulatory Disclaimers.",
-        coaching_prompt_seed: "Ji-woo Park is a solid Silver-Tier candidate but has risky gaps programmatically. She needs targeted coaching on active Timeline questioning and SEC risk disclosures. Ask me to generate a 5-minute roleplay scenario targeting SEC Rule 206."
+        primary_bottleneck: "Timeline & Competitor Discovery.",
+        coaching_prompt_seed: "Ji-woo Park is a solid Gold-ready candidate but has gaps in timeline selection and competitive discovery. Focus on active timeline management. Ask me to generate a 5-minute training drill focused on 'Time Horizon Objection'."
       }
     }
   },
@@ -184,7 +184,7 @@ Client: That seems a bit aggressive...`,
           ideal_example: "Are you the sole signer of these savings, or are there co-owners we should engage in this consultation?"
         },
         {
-          criterion: "Needs",
+          criterion: "Need",
           status: "FAIL",
           score: 2,
           evidence: "Ignored anxiety about volatility, focusing only on high stock returns.",
@@ -200,15 +200,15 @@ Client: That seems a bit aggressive...`,
           ideal_example: "What is your target time frame for accessing these funds, and when do you plan to deploy them?"
         },
         {
-          criterion: "Compliance",
+          criterion: "Competitors",
           status: "FAIL",
           score: 1,
-          evidence: "'I can practically guarantee you will keep making healthy profits of at least 10% each year without any risk of loss.'",
-          critique: "FAILED REGULATORY ACCORD: High-risk securities violation. Explicitly guaranteed absolute yields and explicitly claimed zero risk of capital loss.",
-          ideal_example: "Legally, I must emphasize that all investments carry risk of loss, and past results do not guarantee future yields."
+          evidence: "Omitted checking other service providers or self-management.",
+          critique: "FAILED COMPETITOR AUDIT: Completely skipped competitive discovery. Did not ask about rivals, previous financial platforms, or alternative self-directed strategies.",
+          ideal_example: "To help tailor this portfolio, are you checking options with other asset management services, or have you been managing this on your own?"
         },
         {
-          criterion: "Question",
+          criterion: "Questions",
           status: "FAIL",
           score: 2,
           evidence: "Relied completely on commanding, declarative statements.",
@@ -230,8 +230,8 @@ Client: That seems a bit aggressive...`,
         pacing_feedback: "Hyper-fast velocity of 170 words per minute (말하기 속도: 매우 빠름). Heavily imbalanced conversational weight crowding out the client."
       },
       tier_upgrade_advisor: {
-        primary_bottleneck: "Compliance Violation, Defensive Tone, & Overwhelming Pacing.",
-        coaching_prompt_seed: "John is currently a high compliance liability. He needs intensive training on SEC compliance boundaries and empathetic cushioning. Ask me to generate a 5-minute training drill focused on 'Volatile Objections'."
+        primary_bottleneck: "Competitor Discovery Omission & Defensive Pitching.",
+        coaching_prompt_seed: "John is currently a high qualification risk. He needs intensive training on professional competitor exploration and empathetic cushioning. Ask me to generate a 5-minute training drill focused on 'Competitive Objections'."
       }
     }
   },
@@ -300,7 +300,7 @@ Client: Okay, that makes sense. I value the active hands-on management approach.
           ideal_example: "Will we be registering this $500k portfolio individually, or does it require joint trust signatures?"
         },
         {
-          criterion: "Needs",
+          criterion: "Need",
           status: "PASS",
           score: 10,
           evidence: "'Protecting your hard-earned capital is our absolute priority.'",
@@ -316,15 +316,15 @@ Client: Okay, that makes sense. I value the active hands-on management approach.
           ideal_example: "What is your preference on deploying these funds—would you prefer standard DCA over 6 months?"
         },
         {
-          criterion: "Compliance",
+          criterion: "Competitors",
           status: "PASS",
           score: 10,
-          evidence: "'Before we look at strategies, I want to be explicit: all market-linked investments carry some inherent risk...'",
-          critique: "GOLD STANDARD COMPLIANCE: Initiated regulatory warning proactively and masterfully before diving into detailed product placement.",
-          ideal_example: "Protecting your wealth is our primary focus. Legally, I must emphasize that all market investments fluctuate."
+          evidence: "Directly explored the client's previous advisor relationship and reasons for shifting.",
+          critique: "GOLD STANDARD COMPETITOR DISCOVERY: Proactively uncovered previous advisor details and structured clear differentiation points emphasizing active oversight relative to previous 2022 market losses.",
+          ideal_example: "I notice you mentioned your previous advisor lost some capital in 2022. To help me understand, what strategies did they use, and what are you looking for differently from us?"
         },
         {
-          criterion: "Question",
+          criterion: "Questions",
           status: "PASS",
           score: 10,
           evidence: "'How do you feel about high-quality corporate bonds as a counterweight to stock volatility?'",
@@ -346,8 +346,8 @@ Client: Okay, that makes sense. I value the active hands-on management approach.
         pacing_feedback: "Superb cadence of 130 words per minute (말하기 속도: 보통). Highly respectful balance allowing the client to lead dialogue."
       },
       tier_upgrade_advisor: {
-        primary_bottleneck: "Fully Optimized Compliance & Coaching Performance.",
-        coaching_prompt_seed: "Sarah Jenkins is an exemplary Gold-Tier candidate with stellar compliance rankings. Her coaching should focus on mentorship leadership training. Ask me to draft a leadership track curriculum for her."
+        primary_bottleneck: "Fully Optimized Sales & BANTCQ Performance.",
+        coaching_prompt_seed: "Sarah Jenkins is an exemplary Gold-Tier candidate with stellar sales and consultative rankings. Her coaching should focus on strategic competitor blocking and mentorship. Ask me to draft an advanced consultative masterclass for her."
       }
     }
   }
