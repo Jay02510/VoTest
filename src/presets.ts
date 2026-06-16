@@ -68,7 +68,7 @@ Ji-woo: We can get started as soon as next week. I will set up the asset account
           ideal_example: "To set assets up correctly, will this portfolio be registered in your sole name or a co-owned trust?"
         },
         {
-          criterion: "Need",
+          criterion: "Needs",
           status: "PASS",
           score: 8,
           evidence: "Discussing the client's desire for balanced market growth and protection of capital.",
@@ -84,7 +84,7 @@ Ji-woo: We can get started as soon as next week. I will set up the asset account
           ideal_example: "What is your target investment horizon for this $350,000 capital, and when do you anticipate needing payouts?"
         },
         {
-          criterion: "Competitors",
+          criterion: "Compliance",
           status: "FAIL",
           score: 2,
           evidence: "Omitted checking whether the client is looking at any competing products.",
@@ -92,7 +92,7 @@ Ji-woo: We can get started as soon as next week. I will set up the asset account
           ideal_example: "Are you comparing our pricing and services with any other wealth management firms or digital investment platforms?"
         },
         {
-          criterion: "Questions",
+          criterion: "Question",
           status: "PASS",
           score: 8,
           evidence: "'What kind of fees do you charge? ... Yes, we charge a standard 1%...'",
@@ -184,7 +184,7 @@ Client: That seems a bit aggressive...`,
           ideal_example: "Are you the sole signer of these savings, or are there co-owners we should engage in this consultation?"
         },
         {
-          criterion: "Need",
+          criterion: "Needs",
           status: "FAIL",
           score: 2,
           evidence: "Ignored anxiety about volatility, focusing only on high stock returns.",
@@ -200,7 +200,7 @@ Client: That seems a bit aggressive...`,
           ideal_example: "What is your target time frame for accessing these funds, and when do you plan to deploy them?"
         },
         {
-          criterion: "Competitors",
+          criterion: "Compliance",
           status: "FAIL",
           score: 1,
           evidence: "Omitted checking other service providers or self-management.",
@@ -208,7 +208,7 @@ Client: That seems a bit aggressive...`,
           ideal_example: "To help tailor this portfolio, are you checking options with other asset management services, or have you been managing this on your own?"
         },
         {
-          criterion: "Questions",
+          criterion: "Question",
           status: "FAIL",
           score: 2,
           evidence: "Relied completely on commanding, declarative statements.",
@@ -300,7 +300,7 @@ Client: Okay, that makes sense. I value the active hands-on management approach.
           ideal_example: "Will we be registering this $500k portfolio individually, or does it require joint trust signatures?"
         },
         {
-          criterion: "Need",
+          criterion: "Needs",
           status: "PASS",
           score: 10,
           evidence: "'Protecting your hard-earned capital is our absolute priority.'",
@@ -316,7 +316,7 @@ Client: Okay, that makes sense. I value the active hands-on management approach.
           ideal_example: "What is your preference on deploying these funds—would you prefer standard DCA over 6 months?"
         },
         {
-          criterion: "Competitors",
+          criterion: "Compliance",
           status: "PASS",
           score: 10,
           evidence: "Directly explored the client's previous advisor relationship and reasons for shifting.",
@@ -324,7 +324,7 @@ Client: Okay, that makes sense. I value the active hands-on management approach.
           ideal_example: "I notice you mentioned your previous advisor lost some capital in 2022. To help me understand, what strategies did they use, and what are you looking for differently from us?"
         },
         {
-          criterion: "Questions",
+          criterion: "Question",
           status: "PASS",
           score: 10,
           evidence: "'How do you feel about high-quality corporate bonds as a counterweight to stock volatility?'",

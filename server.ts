@@ -50,10 +50,10 @@ Evaluate the transcript closely based on these critical criteria:
 1. THE PROPRIETARY BANTCQ FRAMEWORK:
    - Budget: Did the applicant discuss the budget availability, account/portfolio size, or fees?
    - Authority: Did they confirm decision-making power or verify the principal decision owner?
-   - Need: Did they discover the client's pain points, anxieties, or business weaknesses?
+   - Needs: Did they discover the client's pain points, anxieties, or business weaknesses?
    - Timeline: Did they establish an implementation schedule or target deployment horizon?
-   - Competitors: Did they check for current solutions, alternative approaches, or competitive evaluation?
-   - Questions: Did they ask open-ended questions, handle customer inquiries, and display active listening?
+   - Compliance: Did they check for regulatory compliance, risk disclosures, or avoid over-promising guarantees?
+   - Question: Did they ask open-ended questions, handle customer inquiries, and display active listening?
 
 2. LINGUISTIC METRICS:
    - Calculate the Talk/Listen ratio (Speech Share) in "Talk:Listen" percentage format.
@@ -147,13 +147,13 @@ Ensure your response is valid JSON strictly compliant with the required schema. 
             },
             bantcq_scoring: {
               type: Type.ARRAY,
-              description: "Assess all 6 dimensions of the proprietary BANTCQ Framework: Budget, Authority, Need, Timeline, Competitors, Questions.",
+              description: "Assess all 6 dimensions of the proprietary BANTCQ Framework: Budget, Authority, Needs, Timeline, Compliance, Question.",
               items: {
                 type: Type.OBJECT,
                 properties: {
                   criterion: {
                     type: Type.STRING,
-                    description: "Must be exactly one of: 'Budget', 'Authority', 'Need', 'Timeline', 'Competitors', or 'Questions'.",
+                    description: "Must be exactly one of: 'Budget', 'Authority', 'Needs', 'Timeline', 'Compliance', or 'Question'.",
                   },
                   status: {
                     type: Type.STRING,

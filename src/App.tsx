@@ -1616,16 +1616,16 @@ AI Training Assistant // VOTEST Global`;
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch">
                           
                           {/* Simulated Dialogue Box */}
-                          <div className="p-4 bg-slate-950 text-amber-105 rounded-xl border-l-4 border-amber-400 font-mono text-[11.5px] leading-relaxed flex flex-col justify-between shadow-sm">
+                          <div className="p-4 bg-slate-950 text-amber-100 rounded-xl border-l-4 border-amber-400 font-mono text-[11.5px] leading-relaxed flex flex-col justify-between shadow-sm">
                             <div>
                               <span className="text-[11px] font-mono font-black uppercase tracking-wider text-amber-400 block mb-3 border-b border-amber-900/50 pb-1.5">
                                 🎙️ Transcript:
                               </span>
-                              <p className="whitespace-pre-wrap leading-relaxed italic select-all select-none">
+                              <p className="whitespace-pre-wrap leading-relaxed italic text-amber-200 select-text">
                                 {callFlowEvents[selectedTimelineIndex].dialogue}
                               </p>
                             </div>
-                            <div className="mt-4 pt-2 border-t border-amber-950/40 text-[11px] text-slate-400 text-right font-mono font-medium">
+                            <div className="mt-4 pt-2 border-t border-amber-900/40 text-[11px] text-amber-200/70 text-right font-mono font-medium">
                               Timestamp: {callFlowEvents[selectedTimelineIndex].timestamp}
                             </div>
                           </div>
